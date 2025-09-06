@@ -30,3 +30,7 @@ func Printf(format string, args ...interface{}) {
 	C.scr_printf(str)
 	C.free(unsafe.Pointer(str))
 }
+
+func Clear() {
+	C.scr_clear()
+}
