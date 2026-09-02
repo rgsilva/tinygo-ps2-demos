@@ -42,36 +42,6 @@ flappygopher:
 	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src rgsilva/ps2dev \
 		mips64r5900el-ps2-elf-gcc \
 		-Tlinkfile \
-		-L/usr/local/ps2dev/ps2sdk/ee/lib \
-		-L/usr/local/ps2dev/ps2sdk/ports/lib \
-		-L/usr/local/ps2dev/gsKit/lib/ \
-		-Lmodules/ds34bt/ee/ \
-		-Lmodules/ds34usb/ee/ \
-		-Wl,-zmax-page-size=128 \
-		-lpatches \
-		-lfileXio \
-		-lpad \
-		-ldebug \
-		-lmath3d \
-		-ljpeg \
-		-lfreetype \
-		-lgskit_toolkit \
-		-lgskit \
-		-ldmakit \
-		-lpng \
-		-lz \
-		-lmc \
-		-laudsrv \
-		-lelf-loader \
-		-laudsrv \
-		-lc \
-		-ldraw \
-		-lgraph \
-		-lpacket \
-		-ldma \
-		-lmath3d \
-		-mhard-float \
-		-msingle-float \
 		-o build/flappygopher.elf \
 		build/freesio2.o \
 		build/freepad.o \
@@ -83,7 +53,37 @@ flappygopher:
 		build/bird.o \
 		build/pipe.o \
 		build/gameover.o \
-		build/sky.o
+		build/sky.o \
+		-L/usr/local/ps2dev/ps2sdk/ee/lib \
+		-L/usr/local/ps2dev/ps2sdk/ports/lib \
+		-L/usr/local/ps2dev/gsKit/lib/ \
+		-Lmodules/ds34bt/ee/ \
+		-Lmodules/ds34usb/ee/ \
+		-Wl,-zmax-page-size=128 \
+		-lpatches \
+		-lfileXio \
+		-lpad \
+		-ldebug \
+		-lmath3d \
+		-ljpeg \
+		-lfreetype \
+		-lgskit_toolkit \
+		-lgskit \
+		-ldmakit \
+		-lpng \
+		-lz \
+		-lmc \
+		-laudsrv \
+		-lelf-loader \
+		-laudsrv \
+		-lc \
+		-ldraw \
+		-lgraph \
+		-lpacket \
+		-ldma \
+		-lmath3d \
+		-mhard-float \
+		-msingle-float
 
 test:
 	cd test && CGO_CFLAGS="$(CGO_CFLAGS)" $(TINYGO) build -opt 0 -x -gc conservative -target ps2 -o ../build/test.ll
@@ -91,6 +91,10 @@ test:
 	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src rgsilva/ps2dev \
 		mips64r5900el-ps2-elf-gcc \
 		-Tlinkfile \
+		-o build/test.elf \
+		build/asm_mipsx.o \
+		build/test.o \
+		build/loader.o \
 		-L/usr/local/ps2dev/ps2sdk/ee/lib \
 		-L/usr/local/ps2dev/ps2sdk/ports/lib \
 		-L/usr/local/ps2dev/gsKit/lib/ \
@@ -121,11 +125,7 @@ test:
 		-lmath3d \
 		-mhard-float \
 		-msingle-float \
-		-O0 \
-		-o build/test.elf \
-		build/asm_mipsx.o \
-		build/test.o \
-		build/loader.o
+		-O0
 
 shell:
 	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src rgsilva/ps2dev
