@@ -1,133 +1,155 @@
-# You need to change these.
-PS2DEV = /Users/ricardo/dev/ps2dev
-TINYGO = /Users/ricardo/dev/tinygo/build/tinygo
-CLANG = /Users/ricardo/dev/tinygo/llvm-build/bin/clang
+# TinyGo PlayStation 2 demos.
+#
+# Go code is compiled to LLVM IR by a custom TinyGo on the host, turned into a
+# MIPS N32 object by the matching clang, and linked against the ps2sdk inside
+# the rgsilva/ps2dev Docker image.
+#
+# Local settings go in config.mk (gitignored) or on the command line:
+#   PS2DEV  host copy of the ps2dev tree (headers only, for cgo)
+#   TINYGO  custom tinygo binary
+#   CLANG   clang from the custom LLVM build
+#   IMAGE   docker image with the ps2sdk toolchain
+# Use V=1 for verbose output.
 
-# Detect the cross-gcc version shipped with the ps2dev toolchain (used for gcc's own headers, e.g. stddef.h).
-EE_GCC_VER = $(shell ls $(PS2DEV)/ee/lib/gcc/mips64r5900el-ps2-elf/)
+-include config.mk
 
+PS2DEV ?= /usr/local/ps2dev
+TINYGO ?= tinygo
+CLANG  ?= clang
+IMAGE  ?= rgsilva/ps2dev
+V      ?= 0
+
+# ---------------------------------------------------------------------------
+# Demos: each demo is a directory with a Go main package. Extra objects linked
+# into a demo are listed in <demo>_OBJS: names of files in resources/ (without
+# extension) or of IOP modules from the ps2sdk (see IRX below).
+# ---------------------------------------------------------------------------
+
+DEMOS = flappygopher test
+
+flappygopher_OBJS = freesio2 freepad gopher arial bird pipe gameover sky
+flappygopher_TINYGO_FLAGS =
+
+test_OBJS =
+test_TINYGO_FLAGS = -opt 0
+# The ps2sdk archives carry LTO bytecode, so the -O level given at link time
+# decides how the SDK code (crt0, libc, libdebug, ...) is compiled into this ELF.
+test_LDFLAGS = -O0
+
+# IOP modules taken from the ps2sdk inside the image and embedded via bin2c.
+IRX = freesio2 freepad
+
+# ---------------------------------------------------------------------------
+# Tools and flags
+# ---------------------------------------------------------------------------
+
+BUILD = build
+Q = $(if $(filter 1,$(V)),,@)
+# Flags live here, so rebuild when the Makefile (or config.mk) changes.
+MAKEFILES_ = Makefile $(wildcard config.mk)
+
+# Paths inside the image.
+PS2DEV_IMG = /usr/local/ps2dev
+PS2SDK_IMG = $(PS2DEV_IMG)/ps2sdk
+
+DOCKER = docker run --rm $(if $(MAKE_TERMOUT),-t) --user=$(shell id -u):$(shell id -g) \
+         -v $(CURDIR):/src -w /src $(IMAGE)
+EE_CC  = mips64r5900el-ps2-elf-gcc
+
+# Headers for cgo (host side). gcc's own headers (stddef.h, ...) live in a
+# versioned directory, so detect the version.
+EE_GCC_VER = $(notdir $(wildcard $(PS2DEV)/ee/lib/gcc/mips64r5900el-ps2-elf/*))
 CGO_CFLAGS = \
-	-I$(PS2DEV)/ee/lib/gcc/mips64r5900el-ps2-elf/$(EE_GCC_VER)/include/ \
-    -I$(PS2DEV)/ee/mips64r5900el-ps2-elf/include \
-    -I$(PS2DEV)/gsKit/include \
-    -I$(PS2DEV)/ps2sdk/common/include \
-    -I$(PS2DEV)/ps2sdk/ee/include \
-    -I$(PS2DEV)/ps2sdk/ports/include/freetype2 \
-    -I$(PS2DEV)/ps2sdk/ports/include/zlib
+	-I$(PS2DEV)/ee/lib/gcc/mips64r5900el-ps2-elf/$(EE_GCC_VER)/include \
+	-I$(PS2DEV)/ee/mips64r5900el-ps2-elf/include \
+	-I$(PS2DEV)/gsKit/include \
+	-I$(PS2DEV)/ps2sdk/common/include \
+	-I$(PS2DEV)/ps2sdk/ee/include \
+	-I$(PS2DEV)/ps2sdk/ports/include/freetype2 \
+	-I$(PS2DEV)/ps2sdk/ports/include/zlib
 
-.PHONY: loader flappygopher test
+TINYGO_FLAGS = -gc conservative -target ps2 $(if $(filter 1,$(V)),-x)
+
+# LLVM IR / assembly -> MIPS N32 object, for the EE.
+CLANG_FLAGS = -c -fno-pic --target=mips64el -mcpu=mips3 -mabi=n32 -mhard-float \
+              -mxgot -mlittle-endian -fno-inline-functions
+
+# C for the EE (loader).
+EE_CFLAGS = -D_EE -G0 -O2 -Wall -gdwarf-2 -gz -mxgot \
+            -I$(PS2SDK_IMG)/ee/include -I$(PS2SDK_IMG)/common/include \
+            -I$(PS2DEV_IMG)/gsKit/include
+
+# Link. The ps2sdk linker script is used as is; TinyGo's runtime needs three
+# extra symbols for the heap and stack.
+EE_LINKFILE = $(PS2SDK_IMG)/ee/startup/linkfile
+EE_LDFLAGS  = -T$(EE_LINKFILE) \
+              -Wl,--defsym=_heap_start=_end \
+              -Wl,--defsym=_heap_end=0x02000000 \
+              -Wl,--defsym=_stack_top=0x02000000-_stack_size \
+              -Wl,-zmax-page-size=128 -mhard-float -msingle-float
+EE_LIBS     = -L$(PS2SDK_IMG)/ee/lib -L$(PS2SDK_IMG)/ports/lib -L$(PS2DEV_IMG)/gsKit/lib \
+              -lpatches -lfileXio -lpad -ldebug -lgskit_toolkit -lgskit -ldmakit -lpng -ljpeg -lz
+
+# ---------------------------------------------------------------------------
+# Rules
+# ---------------------------------------------------------------------------
+
+.PHONY: all $(DEMOS) ps2dev shell clean
+.SECONDEXPANSION:
+.DELETE_ON_ERROR:
+
+all: $(DEMOS)
+
+$(DEMOS): %: $(BUILD)/%.elf
+
+$(BUILD):
+	$(Q)mkdir -p $@
+
+# Link order: IOP modules, runtime glue, the program, the loader, resources.
+objs = $(addprefix $(BUILD)/,$(addsuffix .o,$(1)))
+$(BUILD)/%.elf: $$(call objs,$$(filter $(IRX),$$($$*_OBJS))) $(BUILD)/asm_mipsx.o $(BUILD)/%.o $(BUILD)/loader.o $$(call objs,$$(filter-out $(IRX),$$($$*_OBJS))) $(MAKEFILES_)
+	@echo "  LINK    $@"
+	$(Q)$(DOCKER) $(EE_CC) $(EE_LDFLAGS) $($*_LDFLAGS) -o $@ $(filter %.o,$^) $(EE_LIBS)
+
+# Go -> LLVM IR. Demos import the shared packages, so depend on all Go sources.
+GO_SOURCES := $(shell find . -name '*.go' -not -path './$(BUILD)/*')
+$(BUILD)/%.ll: $(GO_SOURCES) $(MAKEFILES_) | $(BUILD)
+	@echo "  TINYGO  $@"
+	$(Q)CGO_CFLAGS="$(CGO_CFLAGS)" $(TINYGO) build $(TINYGO_FLAGS) $($*_TINYGO_FLAGS) -o $@ ./$*
+
+$(BUILD)/%.o: $(BUILD)/%.ll
+	@echo "  CLANG   $@"
+	$(Q)$(CLANG) $(CLANG_FLAGS) -o $@ $<
+
+$(BUILD)/asm_mipsx.o: loader/asm_mipsx.S | $(BUILD)
+	@echo "  CLANG   $@"
+	$(Q)$(CLANG) $(CLANG_FLAGS) -o $@ $<
+
+$(BUILD)/loader.o: loader/loader.c | $(BUILD)
+	@echo "  EE_CC   $@"
+	$(Q)$(DOCKER) $(EE_CC) $(EE_CFLAGS) -c -o $@ $<
+
+# Binary resources -> objects (bin2c from the ps2sdk, symbol = file name).
+RESOURCES := $(notdir $(basename $(wildcard resources/*.raw resources/*.fnt)))
+define BIN2O
+	@echo "  BIN2O   $@"
+	$(Q)$(DOCKER) sh -c 'bin2c $(1) $(basename $@).c $* && $(EE_CC) -c -o $@ $(basename $@).c && rm $(basename $@).c'
+endef
+
+$(patsubst %,$(BUILD)/%.o,$(RESOURCES)): $(BUILD)/%.o: $$(wildcard resources/%.raw resources/%.fnt) | $(BUILD)
+	$(call BIN2O,$<)
+
+$(patsubst %,$(BUILD)/%.o,$(IRX)): $(BUILD)/%.o: | $(BUILD)
+	$(call BIN2O,$(PS2SDK_IMG)/iop/irx/$*.irx)
+
+# Keep intermediate files (.ll, .o) instead of deleting them after the link.
+.SECONDARY:
 
 ps2dev:
-	@docker build -f Dockerfile.ps2dev -t rgsilva/ps2dev .
-
-loader:
-	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src/loader rgsilva/ps2dev make
-	$(CLANG) -fno-pic -c -mcpu=mips3 -fno-inline-functions --target=mips64el -mabi=n32 -mhard-float -mxgot -mlittle-endian -o loader/asm_mipsx.o loader/asm_mipsx.S
-	@mv -f loader/*.o build/
-
-flappygopher:
-	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src/resources rgsilva/ps2dev ./bin2o gopher.raw gopher
-	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src/resources rgsilva/ps2dev ./bin2o arial.fnt arial
-	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src/resources rgsilva/ps2dev ./bin2o bird.raw bird
-	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src/resources rgsilva/ps2dev ./bin2o pipe.raw pipe
-	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src/resources rgsilva/ps2dev ./bin2o gameover.raw gameover
-	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src/resources rgsilva/ps2dev ./bin2o sky.raw sky
-	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src/resources rgsilva/ps2dev ./bin2o ../loader/freesio2.irx freesio2
-	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src/resources rgsilva/ps2dev ./bin2o ../loader/freepad.irx freepad
-	@mv -f resources/*.o build/
-	CGO_CFLAGS="$(CGO_CFLAGS)" $(TINYGO) build -x -gc conservative -target ps2 -o build/flappygopher.ll flappygopher/main.go
-	$(CLANG) -fno-pic -c --target=mips64el -mcpu=mips3 -fno-inline-functions -mabi=n32 -mhard-float -mxgot -mlittle-endian -o build/flappygopher.o build/flappygopher.ll
-	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src rgsilva/ps2dev \
-		mips64r5900el-ps2-elf-gcc \
-		-Tlinkfile \
-		-o build/flappygopher.elf \
-		build/freesio2.o \
-		build/freepad.o \
-		build/asm_mipsx.o \
-		build/flappygopher.o \
-		build/loader.o \
-		build/gopher.o \
-		build/arial.o \
-		build/bird.o \
-		build/pipe.o \
-		build/gameover.o \
-		build/sky.o \
-		-L/usr/local/ps2dev/ps2sdk/ee/lib \
-		-L/usr/local/ps2dev/ps2sdk/ports/lib \
-		-L/usr/local/ps2dev/gsKit/lib/ \
-		-Lmodules/ds34bt/ee/ \
-		-Lmodules/ds34usb/ee/ \
-		-Wl,-zmax-page-size=128 \
-		-lpatches \
-		-lfileXio \
-		-lpad \
-		-ldebug \
-		-lmath3d \
-		-ljpeg \
-		-lfreetype \
-		-lgskit_toolkit \
-		-lgskit \
-		-ldmakit \
-		-lpng \
-		-lz \
-		-lmc \
-		-laudsrv \
-		-lelf-loader \
-		-laudsrv \
-		-lc \
-		-ldraw \
-		-lgraph \
-		-lpacket \
-		-ldma \
-		-lmath3d \
-		-mhard-float \
-		-msingle-float
-
-test:
-	cd test && CGO_CFLAGS="$(CGO_CFLAGS)" $(TINYGO) build -opt 0 -x -gc conservative -target ps2 -o ../build/test.ll
-	$(CLANG) -fno-pic -c --target=mips64el -mcpu=mips3 -fno-inline-functions -mabi=n32 -mhard-float -mxgot -mlittle-endian -v -o build/test.o build/test.ll
-	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src rgsilva/ps2dev \
-		mips64r5900el-ps2-elf-gcc \
-		-Tlinkfile \
-		-o build/test.elf \
-		build/asm_mipsx.o \
-		build/test.o \
-		build/loader.o \
-		-L/usr/local/ps2dev/ps2sdk/ee/lib \
-		-L/usr/local/ps2dev/ps2sdk/ports/lib \
-		-L/usr/local/ps2dev/gsKit/lib/ \
-		-Lmodules/ds34bt/ee/ \
-		-Lmodules/ds34usb/ee/ \
-		-Wl,-zmax-page-size=128 \
-		-lpatches \
-		-lfileXio \
-		-lpad \
-		-ldebug \
-		-lmath3d \
-		-ljpeg \
-		-lfreetype \
-		-lgskit_toolkit \
-		-lgskit \
-		-ldmakit \
-		-lpng \
-		-lz \
-		-lmc \
-		-laudsrv \
-		-lelf-loader \
-		-laudsrv \
-		-lc \
-		-ldraw \
-		-lgraph \
-		-lpacket \
-		-ldma \
-		-lmath3d \
-		-mhard-float \
-		-msingle-float \
-		-O0
+	docker build -f Dockerfile.ps2dev -t $(IMAGE) .
 
 shell:
-	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src rgsilva/ps2dev
+	docker run --rm -it --user=$(shell id -u):$(shell id -g) -v $(CURDIR):/src -w /src $(IMAGE)
 
 clean:
-	rm -rf loader/*.o loader/*.irx loader/*.map
-	rm -rf build/*
+	rm -rf $(BUILD)

@@ -28,5 +28,5 @@ go.work.sum
 build/
 .idea
 
-# IOP modules are copied from the ps2dev image by loader/Makefile
-loader/*.irx
+# local build settings (paths to ps2dev, tinygo, clang)
+config.mk

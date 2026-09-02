@@ -1,7 +1,0 @@
-#!/bin/bash -e
-
-echo $1 -> $2.c
-bin2c $1 $2.c $2
-echo $2.c -> $2.o
-mips64r5900el-ps2-elf-gcc $2.c -c -o $2.o
-rm $2.c

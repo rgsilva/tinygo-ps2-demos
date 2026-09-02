@@ -13,22 +13,29 @@ Currently this requires a custom version of the TinyGo compiler. The custom vers
 [here](https://github.com/rgsilva/tinygo-ps2), and it requires [this](https://github.com/rgsilva/tinygo-ps2-llvm/tree/xtensa_release_19.1.2)
 custom version of the LLVM to work.
 
-Since I'm working on an Apple silicon Mac, I'm using Docker as a way to use the amd64 binaries of the ps2dev/ps2sdk. As such,
-you'll need to Docker to build the project. First step is to build our special custom image:
+The Go code is compiled to LLVM IR by TinyGo and turned into MIPS objects by clang, both on the host.
+The final link against the ps2sdk happens in Docker, using the amd64 binaries of ps2dev/ps2sdk (I'm on an
+Apple silicon Mac). So you'll need Docker. First build the image:
 
 ```sh
 make ps2dev
 ```
 
-Then you'll also some very basic code that I call "loader". To build that, run:
+Then tell the Makefile where your tools are, either in a `config.mk` file next to it (gitignored):
 
-```sh
-make loader
+```make
+PS2DEV = /path/to/ps2dev      # a copy of the image's /usr/local/ps2dev, headers are needed on the host
+TINYGO = /path/to/tinygo-ps2/build/tinygo
+CLANG  = /path/to/tinygo-ps2/llvm-build/bin/clang
 ```
 
-After this, you can build the demos as follows:
+or on the command line (`make PS2DEV=... TINYGO=... CLANG=...`). After that:
 
+* Everything: `make`
 * Flappy Gopher: `make flappygopher`
 * Test application: `make test`
+
+ELFs end up in `build/`. Use `V=1` to see the commands. Adding a demo is a directory with a Go main
+package plus one line in the `DEMOS` list in the Makefile.
 
 Have fun!
