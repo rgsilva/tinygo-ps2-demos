@@ -3,8 +3,11 @@ PS2DEV = /Users/ricardo/dev/ps2dev
 TINYGO = /Users/ricardo/dev/tinygo/build/tinygo
 CLANG = /Users/ricardo/dev/tinygo/llvm-build/bin/clang
 
+# Detect the cross-gcc version shipped with the ps2dev toolchain (used for gcc's own headers, e.g. stddef.h).
+EE_GCC_VER = $(shell ls $(PS2DEV)/ee/lib/gcc/mips64r5900el-ps2-elf/)
+
 CGO_CFLAGS = \
-	-I$(PS2DEV)/ee/lib/gcc/mips64r5900el-ps2-elf/14.2.0/include/ \
+	-I$(PS2DEV)/ee/lib/gcc/mips64r5900el-ps2-elf/$(EE_GCC_VER)/include/ \
     -I$(PS2DEV)/ee/mips64r5900el-ps2-elf/include \
     -I$(PS2DEV)/gsKit/include \
     -I$(PS2DEV)/ps2sdk/common/include \
