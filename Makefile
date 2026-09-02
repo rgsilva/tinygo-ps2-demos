@@ -71,7 +71,7 @@ CGO_CFLAGS = \
 TINYGO_FLAGS = -gc conservative -target ps2 $(if $(filter 1,$(V)),-x)
 
 # LLVM IR / assembly -> MIPS N32 object, for the EE.
-CLANG_FLAGS = -c -fno-pic --target=mips64el -mcpu=mips3 -mabi=n32 -mhard-float \
+CLANG_FLAGS = -c -fno-pic --target=mips64el -mcpu=r5900 -mabi=n32 -mhard-float \
               -mxgot -mlittle-endian -fno-inline-functions
 
 # C for the EE (loader).
