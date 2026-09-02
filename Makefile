@@ -32,8 +32,6 @@ flappygopher:
 	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src/resources rgsilva/ps2dev ./bin2o pipe.raw pipe
 	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src/resources rgsilva/ps2dev ./bin2o gameover.raw gameover
 	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src/resources rgsilva/ps2dev ./bin2o sky.raw sky
-	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src/resources rgsilva/ps2dev ./bin2o ../loader/sio2man.irx sio2man
-	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src/resources rgsilva/ps2dev ./bin2o ../loader/padman.irx padman
 	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src/resources rgsilva/ps2dev ./bin2o ../loader/freesio2.irx freesio2
 	@docker run --rm -ti --user=$(shell id -u):$(shell id -g) -v ${PWD}:/src -w /src/resources rgsilva/ps2dev ./bin2o ../loader/freepad.irx freepad
 	@mv -f resources/*.o build/

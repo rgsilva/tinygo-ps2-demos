@@ -27,3 +27,6 @@ go.work.sum
 .DS_Store
 build/
 .idea
+
+# IOP modules are copied from the ps2dev image by loader/Makefile
+loader/*.irx
