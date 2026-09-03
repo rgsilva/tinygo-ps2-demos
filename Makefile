@@ -28,14 +28,12 @@ V      ?= 0
 # are copied there from the ps2sdk in the image.
 # ---------------------------------------------------------------------------
 
-DEMOS = flappygopher test
+DEMOS = flappygopher
 
+# Per-program knobs: <name>_TINYGO_FLAGS and <name>_LDFLAGS. Note that the
+# ps2sdk archives carry LTO bytecode, so an -O level given at link time decides
+# how the SDK code (crt0, libc, libdebug, ...) is compiled into that ELF.
 flappygopher_TINYGO_FLAGS =
-
-test_TINYGO_FLAGS = -opt 0
-# The ps2sdk archives carry LTO bytecode, so the -O level given at link time
-# decides how the SDK code (crt0, libc, libdebug, ...) is compiled into this ELF.
-test_LDFLAGS = -O0
 
 # The test suite (tests/) and the harness's negative controls (controls/*)
 # are built like demos; `make check` runs them in PCSX2 (harness/ps2test.py).
