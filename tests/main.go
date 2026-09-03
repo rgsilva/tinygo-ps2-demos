@@ -22,6 +22,7 @@ func main() {
 		{Name: "memstats", Fn: testMemStats},
 	}
 	cases = append(cases, harness.Case{Name: "timer", Fn: testTimer})
+	cases = append(cases, harness.Case{Name: "interrupts", Fn: testInterrupts})
 	// Tag-gated cases (sched_tagged.go with -tags ps2go_sched, recover_tagged.go
 	// with -tags ps2go_recover) go last so a hang does not hide the results above.
 	cases = append(cases, extraCases...)
