@@ -35,6 +35,13 @@ DEMOS = flappygopher
 # how the SDK code (crt0, libc, libdebug, ...) is compiled into that ELF.
 flappygopher_TINYGO_FLAGS =
 
+# EE memory map, decided here at link time (32 MB of RAM, the first 1 MB is
+# the kernel's): program | libc heap | Go heap | stack. The libc heap (gsKit
+# structures, C mallocs) is LIBC_HEAP bytes after the program, capped there by
+# crt0/SetupHeap; the Go heap is everything up to the stack. Override per
+# program with <name>_LIBC_HEAP.
+LIBC_HEAP ?= 4*1024*1024
+
 # The test suite (tests/) and the harness's negative controls (controls/*)
 # are built like demos; `make check` runs them in PCSX2 (harness/ps2test.py).
 TESTS = tests
@@ -94,13 +101,13 @@ CLANG_FLAGS = -c -fno-pic --target=mips64el-unknown-none-gnuabin32 -mcpu=r5900 -
 # kernel patch blobs in libkernel are full of words that look like pointers.
 # Data that must not be scanned (big buffers, counters) can be placed in the
 # .ps2go.noscan section. The script is generated per program (build/%.ld).
-# TinyGo's runtime also needs the heap bounds (replaced at runtime by a libc
-# allocation) and the stack top: crt0 asks the kernel for a stack of
-# _stack_size bytes at the top of RAM, [0x02000000-_stack_size, 0x02000000).
+# The libc heap size (LIBC_HEAP) is the one number given here; the generated
+# linker script (build/%.ld) derives the heap and stack symbols from it.
 SDK_LINKFILE = $(PS2DEV)/ps2sdk/ee/startup/linkfile
-EE_LDFLAGS  = -Wl,--defsym=_heap_start=_end \
-              -Wl,--defsym=_heap_end=0x02000000 \
-              -Wl,--defsym=_stack_top=0x02000000 \
+# -u scr_printf pulls libdebug's screen printf in so the runtime can show a
+# bad memory map on the TV, not only on the serial port.
+EE_LDFLAGS  = -Wl,--defsym=_heap_size=$(or $($*_LIBC_HEAP),$(LIBC_HEAP)) \
+              -Wl,-u,init_scr -Wl,-u,scr_printf \
               -Wl,-zmax-page-size=128 -mhard-float -msingle-float
 EE_LIBS     = -L$(PS2SDK_IMG)/ee/lib -L$(PS2SDK_IMG)/ports/lib -L$(PS2DEV_IMG)/gsKit/lib \
               -lpatches -lfileXio -lpad -ldebug -lgskit_toolkit -lgskit -ldmakit -lpng -ljpeg -lz
@@ -142,8 +149,17 @@ $(BUILD)/%.ld: $(SDK_LINKFILE) $(MAKEFILES_)
 	    print "\t\t_globals_end = . ;"; \
 	    print "\t}"; \
 	    print; print "\t\t*(.ps2go.noscan)"; next } \
+	  /^\tPROVIDE\(_stack_size = / { print; \
+	    print "\t/* ps2go memory map: program | libc heap | Go heap | stack. crt0 caps"; \
+	    print "\t   the libc heap at _end+_heap_size (SetupHeap) and asks the kernel for"; \
+	    print "\t   a stack of _stack_size bytes below the top page of RAM, which the"; \
+	    print "\t   kernel keeps; the Go heap fills the gap. _heap_size is given with"; \
+	    print "\t   --defsym (LIBC_HEAP); the runtime checks all this against the kernel. */"; \
+	    print "\t_heap_start = (_end + _heap_size + 15) & ~15;"; \
+	    print "\t_stack_top = 0x02000000 - 0x1000;"; \
+	    print "\t_heap_end = _stack_top - _stack_size;"; next } \
 	  { print }' $< > $@
-	$(Q)grep -q '_globals_end' $@ || { echo "failed to patch $(SDK_LINKFILE)"; rm -f $@; exit 1; }
+	$(Q)grep -q '_globals_end' $@ && grep -q '_heap_start' $@ || { echo "failed to patch $(SDK_LINKFILE)"; rm -f $@; exit 1; }
 
 # Go -> LLVM IR. Demos import the shared packages, so depend on all Go sources
 # (and on the embedded IOP modules).
