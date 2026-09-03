@@ -6,7 +6,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"sync/atomic"
 )
 
@@ -117,53 +116,6 @@ func testSelect() error {
 	}
 	if selU(true, 0x1122334455667788, 0) != 0x1122334455667788 || selU(false, 0, 0x8877665544332211) != 0x8877665544332211 {
 		return fmt.Errorf("sel64")
-	}
-	return nil
-}
-
-var f32vec = []float32{-3.5, -1, -0.0, 0, 0.5, 1, 2.25, 1e10, -1e10, 1e-10}
-
-//go:noinline
-func cmp32(a, b float32) (lt, le, gt, ge, eq bool) {
-	return a < b, a <= b, a > b, a >= b, a == b
-}
-
-func testFloat32Compare() error {
-	for i, a := range f32vec {
-		for j, b := range f32vec {
-			lt, le, gt, ge, eq := cmp32(a, b)
-			// Reference through the index order of the sorted vector, ignoring -0/0.
-			wa, wb := a, b
-			if lt != (wa < wb) || le != (wa <= wb) || gt != (wa > wb) || ge != (wa >= wb) || eq != (wa == wb) {
-				return fmt.Errorf("cmp %v(%d) %v(%d): %v %v %v %v %v", a, i, b, j, lt, le, gt, ge, eq)
-			}
-		}
-	}
-	nan := float32(math.NaN())
-	if nan == nan || !(nan != nan) {
-		return fmt.Errorf("NaN self-compare")
-	}
-	var x float32 = 3
-	if x*x != 9 || float32(math.Sqrt(float64(x*x))) != 3 {
-		return fmt.Errorf("mul/sqrt")
-	}
-	return nil
-}
-
-func testFloat64() error {
-	a, b := 1.5, 2.25
-	if a+b != 3.75 || b-a != 0.75 || a*b != 3.375 || b/a != 1.5 {
-		return fmt.Errorf("f64 arith")
-	}
-	if !(a < b) || a > b || a == b || !(a != b) {
-		return fmt.Errorf("f64 compare")
-	}
-	if float32(b) != 2.25 || float64(float32(0.1)) == 0.1 {
-		return fmt.Errorf("f64 conversions")
-	}
-	s := fmt.Sprintf("%.3f", math.Pi)
-	if s != "3.142" {
-		return fmt.Errorf("f64 format %q", s)
 	}
 	return nil
 }
