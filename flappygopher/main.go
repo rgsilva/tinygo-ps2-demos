@@ -77,14 +77,16 @@ var (
 func main() {
 	debug.Init()
 
-	sifrpc.ResetAndPatchIOP()
+	must(sifrpc.ResetAndPatchIOP())
 
-	// Load necessary modules for controller stuff and the init it.
+	// Load the IOP modules the controller needs.
 	debug.Printf("Loading freesio2\n")
-	sifrpc.LoadModuleBuffer(unsafe.Pointer(&resources.Freesio2[0]), len(resources.Freesio2))
+	_, err := sifrpc.LoadModuleBuffer(resources.Freesio2)
+	must(err)
 
 	debug.Printf("Loading freepad\n")
-	sifrpc.LoadModuleBuffer(unsafe.Pointer(&resources.Freepad[0]), len(resources.Freepad))
+	_, err = sifrpc.LoadModuleBuffer(resources.Freepad)
+	must(err)
 
 	// Initialize the DMA controller
 	debug.Printf("Initializing DMA\n")
@@ -636,4 +638,14 @@ func goToMenu() {
 	gameState = Menu
 	debounceCounter = 0
 	debounceCounterTarget = WaitFramesOnMenu
+}
+
+// must shows a fatal error on screen and stops: without the controller
+// modules there is no game to play.
+func must(err error) {
+	if err != nil {
+		debug.Printf("fatal: %v\n", err)
+		for {
+		}
+	}
 }

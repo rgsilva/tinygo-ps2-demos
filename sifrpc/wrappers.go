@@ -26,25 +26,45 @@ static int resetAndPatchIOP()
 */
 import "C"
 import (
-	"ps2go/debug"
+	"fmt"
 	"unsafe"
 )
 
-func ResetAndPatchIOP() {
-	ret := C.resetAndPatchIOP()
-	debug.Printf("ResetAndPatchIOP: %d\n", int(ret))
+// ResetAndPatchIOP resets the IOP and applies the sbv patches so that modules
+// can be loaded from EE memory.
+func ResetAndPatchIOP() error {
+	if ret := int(C.resetAndPatchIOP()); ret < 0 {
+		return fmt.Errorf("sifrpc: IOP reset failed: %d", ret)
+	}
+	return nil
 }
 
-func LoadModule(path string) {
+// LoadModule loads an IRX module from a path (host:, mc0:, cdrom0:, ...) and
+// returns its module id.
+func LoadModule(path string) (int, error) {
 	cPath := C.CString(path)
-
-	ret := int(C.SifLoadModule(cPath, 0, nil))
-	debug.Printf("Load module: %s, %d\n", path, ret)
-
-	C.free(unsafe.Pointer(cPath))
+	defer C.free(unsafe.Pointer(cPath))
+	id := int(C.SifLoadModule(cPath, 0, nil))
+	if id < 0 {
+		return id, fmt.Errorf("sifrpc: loading %s failed: %d", path, id)
+	}
+	return id, nil
 }
 
-func LoadModuleBuffer(ptr unsafe.Pointer, size int) {
-	ret := int(C.SifExecModuleBuffer(ptr, C.uint(size), C.uint(0), nil, nil))
-	debug.Printf("Load module buffer:%d\n", ret)
+// LoadModuleBuffer loads an IRX module from EE memory and returns its module
+// id. The data is read by DMA, so it must be 16-byte aligned (embedded
+// modules are, see the resources package).
+func LoadModuleBuffer(data []byte) (int, error) {
+	if len(data) == 0 {
+		return -1, fmt.Errorf("sifrpc: empty module")
+	}
+	p := unsafe.Pointer(&data[0])
+	if uintptr(p)%16 != 0 {
+		return -1, fmt.Errorf("sifrpc: module data at %#x is not 16-byte aligned", uintptr(p))
+	}
+	id := int(C.SifExecModuleBuffer(p, C.uint(len(data)), 0, nil, nil))
+	if id < 0 {
+		return id, fmt.Errorf("sifrpc: loading module from memory failed: %d", id)
+	}
+	return id, nil
 }
