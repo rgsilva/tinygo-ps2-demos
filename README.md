@@ -10,7 +10,7 @@ This is a hobby project and I'm not a game developer. This project was created f
 ## Building
 
 Currently this requires a custom version of the TinyGo compiler. The custom version is provided
-[here](https://github.com/rgsilva/tinygo-ps2), and it requires [this](https://github.com/rgsilva/tinygo-ps2-llvm/tree/xtensa_release_19.1.2)
+[here](https://github.com/rgsilva/tinygo-ps2), and it requires [this](https://github.com/rgsilva/tinygo-ps2-llvm/tree/ps2/tinygo_22.x)
 custom version of the LLVM to work.
 
 The Go code is compiled to LLVM IR by TinyGo and turned into MIPS objects by clang, both on the host.
