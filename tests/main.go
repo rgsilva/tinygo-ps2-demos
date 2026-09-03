@@ -18,10 +18,9 @@ func main() {
 		{Name: "gc-stress", Fn: testGCStress},
 		{Name: "memstats", Fn: testMemStats},
 	}
-	// Known-incomplete runtime features go last so a hang does not hide the
-	// results above: the timer (no clock yet), then the tag-gated cases from
-	// sched_tagged.go (-tags ps2go_sched) and recover_tagged.go (-tags ps2go_recover).
-	cases = append(cases, harness.Case{Name: "timer", Fn: testTimer, XFail: "runtime ticks/sleep not implemented"})
+	cases = append(cases, harness.Case{Name: "timer", Fn: testTimer})
+	// Tag-gated cases (sched_tagged.go with -tags ps2go_sched, recover_tagged.go
+	// with -tags ps2go_recover) go last so a hang does not hide the results above.
 	cases = append(cases, extraCases...)
 	harness.Run(cases)
 }
