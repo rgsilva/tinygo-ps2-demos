@@ -21,16 +21,21 @@ func main() {
 		{Name: "gc-stress", Fn: testGCStress},
 		{Name: "memstats", Fn: testMemStats},
 	}
-	cases = append(cases, harness.Case{Name: "timer", Fn: testTimer})
-	cases = append(cases, harness.Case{Name: "interrupts", Fn: testInterrupts})
-	cases = append(cases, harness.Case{Name: "panic-recover", Fn: testRecover})
-	// Tag-gated cases (sched_tagged.go with -tags ps2go_sched) go last so a
-	// hang does not hide the results above.
-	cases = append(cases, extraCases...)
+	cases = append(cases,
+		harness.Case{Name: "timer", Fn: testTimer},
+		harness.Case{Name: "interrupts", Fn: testInterrupts},
+		harness.Case{Name: "panic-recover", Fn: testRecover},
+		// Goroutines (tasks scheduler).
+		harness.Case{Name: "goroutines", Fn: testGoroutines},
+		harness.Case{Name: "channels", Fn: testChannels},
+		harness.Case{Name: "sleep-goroutines", Fn: testSleepGoroutines},
+		harness.Case{Name: "timers", Fn: testTimers},
+		harness.Case{Name: "gc-goroutine-stacks", Fn: testGCGoroutineStacks},
+		harness.Case{Name: "callee-saved", Fn: testCalleeSaved},
+		harness.Case{Name: "producer-consumer", Fn: testProducerConsumer},
+	)
 	harness.Run(cases)
 }
-
-var extraCases []harness.Case
 
 func hello() error {
 	harness.Log("hello from ps2go")

@@ -42,7 +42,7 @@ test_LDFLAGS = -O0
 # The test suite (tests/) and the harness's negative controls (controls/*)
 # are built like demos; `make check` runs them in PCSX2 (harness/ps2test.py).
 TESTS = tests
-CONTROLS = controls/fail controls/hang controls/crash controls/panic
+CONTROLS = controls/fail controls/hang controls/crash controls/panic controls/deadlock controls/gopanic
 
 # IOP modules taken from the ps2sdk inside the image and embedded via bin2c.
 IRX = freesio2 freepad
@@ -172,6 +172,8 @@ check-harness: $(patsubst %,$(BUILD)/%.elf,$(CONTROLS)) $(BUILD)/tests.elf
 	$(PS2TEST) --expect TIMEOUT --timeout 20 $(BUILD)/controls/hang.elf
 	$(PS2TEST) --expect CRASH   $(BUILD)/controls/crash.elf
 	$(PS2TEST) --expect CRASH   $(BUILD)/controls/panic.elf
+	$(PS2TEST) --expect CRASH   $(BUILD)/controls/deadlock.elf
+	$(PS2TEST) --expect CRASH   $(BUILD)/controls/gopanic.elf
 	$(PS2TEST) --expect PASS    $(BUILD)/tests.elf
 
 # Run any ELF for TIMEOUT seconds and stream its serial output.

@@ -118,7 +118,7 @@ func testFloat32Arith() error {
 	}
 	// Conversions.
 	if int32(fa[4]) != 0 || int32(fa[0]) != -3 || int32(fa[11]) != 123456 {
-		return fmt.Errorf("f32->int truncation")
+		return fmt.Errorf("f32->int truncation: %d %d %d", int32(fa[4]), int32(fa[0]), int32(fa[11]))
 	}
 	if float32(int32(-7)) != -7 || float32(uint32(3000000000)) != 3e9 {
 		return fmt.Errorf("int->f32")
