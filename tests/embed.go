@@ -22,6 +22,13 @@ var embedAligned []byte
 //go:embed embed.bin
 var embedAligned64 []byte
 
+// Pragmas inside a var ( ... ) group must apply too.
+var (
+	//go:align 16
+	//go:embed embed.bin
+	embedGrouped []byte
+)
+
 func testEmbed() error {
 	if len(embedPlain) != 4099 || len(embedAligned) != 4099 || len(embedAligned64) != 4099 {
 		return fmt.Errorf("lengths %d %d %d", len(embedPlain), len(embedAligned), len(embedAligned64))
@@ -40,6 +47,9 @@ func testEmbed() error {
 	harness.Logf("embed: plain @%#x, align16 @%#x (%%16=%d), align64 @%#x (%%64=%d)", uintptr(unsafe.Pointer(&embedPlain[0])), a16, a16%16, a64, a64%64)
 	if a16%16 != 0 || a64%64 != 0 {
 		return fmt.Errorf("go:align not applied to embedded data")
+	}
+	if ag := uintptr(unsafe.Pointer(&embedGrouped[0])); ag%16 != 0 || checksum(embedGrouped) != sum {
+		return fmt.Errorf("go:align inside a var group: data at %#x", ag)
 	}
 	return nil
 }
