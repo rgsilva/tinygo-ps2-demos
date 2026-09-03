@@ -31,7 +31,32 @@ or on the command line (`make PS2DEV=... TINYGO=... CLANG=...`). After that:
 * Flappy Gopher: `make flappygopher`
 * Test application: `make test`
 
-ELFs end up in `build/`. Use `V=1` to see the commands. Adding a demo is a directory with a Go main
+ELFs end up in `build/`. Use `V=1` to see the commands. `PCSX2_DIR` in `config.mk` points at the
+PCSX2 install used by `make check` (default `~/dev/ps2go/tools/pcsx2`). Adding a demo is a directory with a Go main
 package plus one line in the `DEMOS` list in the Makefile.
+
+## Testing
+
+There is a headless test harness that runs ELFs in PCSX2 (real BIOS, Null renderer,
+no display needed). One-time setup, with a PS2 BIOS dump you own:
+
+```sh
+harness/setup-pcsx2.sh ~/dev/ps2go/tools/pcsx2 /path/to/bios.bin
+```
+
+Then:
+
+* `make check` builds `tests/` and runs it: each case prints `PS2GO-CASE <name> PASS|FAIL`
+  on the EE serial port, which ends up in PCSX2's log, and the run ends with `PS2GO-RESULT`.
+  Cases known to fail on the current runtime are marked `XFail` and reported as `XFAIL`.
+* `make check-harness` proves the harness itself with the negative controls in `controls/`
+  (a failing case, a hang, an unmapped memory access) which must produce FAIL, TIMEOUT and CRASH.
+* `make run-<demo>` runs any ELF for `TIMEOUT` seconds and streams its serial output.
+* `harness/ps2test.py --probe 2 build/tests.elf` also reads the guest's stats block
+  (heap in use, allocations, current case) over PCSX2's PINE socket while it runs.
+
+The guest side is the `harness` package: call `harness.Run` with your cases, and use
+`harness.Log` (or plain `println`) for output. Goroutine and recover cases are behind
+the `ps2go_sched` and `ps2go_recover` build tags until the runtime supports them.
 
 Have fun!

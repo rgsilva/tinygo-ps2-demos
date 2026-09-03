@@ -9,6 +9,7 @@
 #   TINYGO  custom tinygo binary
 #   CLANG   clang from the custom LLVM build
 #   IMAGE   docker image with the ps2sdk toolchain (pinned tag; keep PS2DEV in sync)
+#   PCSX2_DIR  PCSX2 install for `make check` (see harness/setup-pcsx2.sh)
 # Use V=1 for verbose output.
 
 -include config.mk
@@ -17,6 +18,8 @@ PS2DEV ?= /usr/local/ps2dev
 TINYGO ?= tinygo
 CLANG  ?= clang
 IMAGE  ?= ps2dev/ps2dev:v2.0.0
+PCSX2_DIR ?= $(HOME)/dev/ps2go/tools/pcsx2
+PYTHON ?= python3
 V      ?= 0
 
 # ---------------------------------------------------------------------------
@@ -35,6 +38,11 @@ test_TINYGO_FLAGS = -opt 0
 # The ps2sdk archives carry LTO bytecode, so the -O level given at link time
 # decides how the SDK code (crt0, libc, libdebug, ...) is compiled into this ELF.
 test_LDFLAGS = -O0
+
+# The test suite (tests/) and the harness's negative controls (controls/*)
+# are built like demos; `make check` runs them in PCSX2 (harness/ps2test.py).
+TESTS = tests
+CONTROLS = controls/fail controls/hang controls/crash
 
 # IOP modules taken from the ps2sdk inside the image and embedded via bin2c.
 IRX = freesio2 freepad
@@ -94,13 +102,13 @@ EE_LIBS     = -L$(PS2SDK_IMG)/ee/lib -L$(PS2SDK_IMG)/ports/lib -L$(PS2DEV_IMG)/g
 # Rules
 # ---------------------------------------------------------------------------
 
-.PHONY: all $(DEMOS) shell clean
+.PHONY: all $(DEMOS) $(TESTS) $(CONTROLS) check check-harness shell clean
 .SECONDEXPANSION:
 .DELETE_ON_ERROR:
 
-all: $(DEMOS)
+all: $(DEMOS) $(TESTS)
 
-$(DEMOS): %: $(BUILD)/%.elf
+$(DEMOS) $(TESTS) $(CONTROLS): %: $(BUILD)/%.elf
 
 $(BUILD):
 	$(Q)mkdir -p $@
@@ -109,12 +117,14 @@ $(BUILD):
 objs = $(addprefix $(BUILD)/,$(addsuffix .o,$(1)))
 $(BUILD)/%.elf: $$(call objs,$$(filter $(IRX),$$($$*_OBJS))) $(BUILD)/asm_mipsx.o $(BUILD)/%.o $(BUILD)/loader.o $$(call objs,$$(filter-out $(IRX),$$($$*_OBJS))) $(MAKEFILES_)
 	@echo "  LINK    $@"
+	$(Q)mkdir -p $(@D)
 	$(Q)$(DOCKER) $(EE_CC) $(EE_LDFLAGS) $($*_LDFLAGS) -o $@ $(filter %.o,$^) $(EE_LIBS)
 
 # Go -> LLVM IR. Demos import the shared packages, so depend on all Go sources.
 GO_SOURCES := $(shell find . -name '*.go' -not -path './$(BUILD)/*')
 $(BUILD)/%.ll: $(GO_SOURCES) $(MAKEFILES_) | $(BUILD)
 	@echo "  TINYGO  $@"
+	$(Q)mkdir -p $(@D)
 	$(Q)CGO_CFLAGS="$(CGO_CFLAGS)" $(TINYGO) build $(TINYGO_FLAGS) $($*_TINYGO_FLAGS) -o $@ ./$*
 
 $(BUILD)/%.o: $(BUILD)/%.ll
@@ -144,6 +154,23 @@ $(patsubst %,$(BUILD)/%.o,$(IRX)): $(BUILD)/%.o: | $(BUILD)
 
 # Keep intermediate files (.ll, .o) instead of deleting them after the link.
 .SECONDARY:
+
+# Run the test suite in PCSX2 (headless). TIMEOUT is in seconds.
+TIMEOUT ?= 120
+PS2TEST = PS2GO_PCSX2_DIR=$(PCSX2_DIR) $(PYTHON) harness/ps2test.py --timeout $(TIMEOUT)
+check: $(BUILD)/tests.elf
+	$(PS2TEST) $<
+
+# Prove the harness itself: each control must produce its verdict.
+check-harness: $(patsubst %,$(BUILD)/%.elf,$(CONTROLS)) $(BUILD)/tests.elf
+	$(PS2TEST) --expect FAIL    $(BUILD)/controls/fail.elf
+	$(PS2TEST) --expect TIMEOUT --timeout 20 $(BUILD)/controls/hang.elf
+	$(PS2TEST) --expect CRASH   $(BUILD)/controls/crash.elf
+	$(PS2TEST) --expect PASS    $(BUILD)/tests.elf
+
+# Run any ELF for TIMEOUT seconds and stream its serial output.
+run-%: $(BUILD)/%.elf
+	$(PS2TEST) --run $<
 
 shell:
 	docker run --rm -it --user=$(shell id -u):$(shell id -g) -v $(CURDIR):/src -w /src $(IMAGE)
