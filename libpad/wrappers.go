@@ -7,7 +7,6 @@ package libpad
 #include <tamtypes.h>
 #include <kernel.h>
 
-#define __attribute__(x) // libpad doesn't play nice with clang.
 #include <libpad.h>
 
 struct padButtonStatus status;
