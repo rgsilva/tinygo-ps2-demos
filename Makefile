@@ -23,17 +23,15 @@ PYTHON ?= python3
 V      ?= 0
 
 # ---------------------------------------------------------------------------
-# Demos: each demo is a directory with a Go main package. Extra objects linked
-# into a demo are listed in <demo>_OBJS: names of files in resources/ (without
-# extension) or of IOP modules from the ps2sdk (see IRX below).
+# Demos: each demo is a directory with a Go main package. Assets and IOP
+# modules are embedded from the resources package (go:embed); the IOP modules
+# are copied there from the ps2sdk in the image.
 # ---------------------------------------------------------------------------
 
 DEMOS = flappygopher test
 
-flappygopher_OBJS = freesio2 freepad gopher arial bird pipe gameover sky
 flappygopher_TINYGO_FLAGS =
 
-test_OBJS =
 test_TINYGO_FLAGS = -opt 0
 # The ps2sdk archives carry LTO bytecode, so the -O level given at link time
 # decides how the SDK code (crt0, libc, libdebug, ...) is compiled into this ELF.
@@ -44,8 +42,9 @@ test_LDFLAGS = -O0
 TESTS = tests
 CONTROLS = controls/fail controls/hang controls/crash controls/panic controls/deadlock controls/gopanic
 
-# IOP modules taken from the ps2sdk inside the image and embedded via bin2c.
+# IOP modules embedded by the resources package, taken from the ps2sdk.
 IRX = freesio2 freepad
+IRX_FILES = $(addprefix resources/,$(addsuffix .irx,$(IRX)))
 
 # ---------------------------------------------------------------------------
 # Tools and flags
@@ -111,7 +110,6 @@ EE_LIBS     = -L$(PS2SDK_IMG)/ee/lib -L$(PS2SDK_IMG)/ports/lib -L$(PS2DEV_IMG)/g
 # ---------------------------------------------------------------------------
 
 .PHONY: all $(DEMOS) $(TESTS) $(CONTROLS) check check-harness shell clean
-.SECONDEXPANSION:
 .DELETE_ON_ERROR:
 
 all: $(DEMOS) $(TESTS)
@@ -121,9 +119,8 @@ $(DEMOS) $(TESTS) $(CONTROLS): %: $(BUILD)/%.elf
 $(BUILD):
 	$(Q)mkdir -p $@
 
-# Link order: IOP modules, runtime glue, the program, the loader, resources.
-objs = $(addprefix $(BUILD)/,$(addsuffix .o,$(1)))
-$(BUILD)/%.elf: $$(call objs,$$(filter $(IRX),$$($$*_OBJS))) $(BUILD)/asm_mipsx.o $(BUILD)/%.o $(BUILD)/loader.o $$(call objs,$$(filter-out $(IRX),$$($$*_OBJS))) $(BUILD)/%.ld $(MAKEFILES_)
+# Link: runtime glue, the program, the loader.
+$(BUILD)/%.elf: $(BUILD)/asm_mipsx.o $(BUILD)/%.o $(BUILD)/loader.o $(BUILD)/%.ld $(MAKEFILES_)
 	@echo "  LINK    $@"
 	$(Q)mkdir -p $(@D)
 	$(Q)$(DOCKER) sh -c '$(EE_OBJCOPY) --set-section-flags .bss=alloc,load,contents,data $(BUILD)/$*.o && \
@@ -148,9 +145,10 @@ $(BUILD)/%.ld: $(SDK_LINKFILE) $(MAKEFILES_)
 	  { print }' $< > $@
 	$(Q)grep -q '_globals_end' $@ || { echo "failed to patch $(SDK_LINKFILE)"; rm -f $@; exit 1; }
 
-# Go -> LLVM IR. Demos import the shared packages, so depend on all Go sources.
+# Go -> LLVM IR. Demos import the shared packages, so depend on all Go sources
+# (and on the embedded IOP modules).
 GO_SOURCES := $(shell find . -name '*.go' -not -path './$(BUILD)/*')
-$(BUILD)/%.ll: $(GO_SOURCES) $(MAKEFILES_) | $(BUILD)
+$(BUILD)/%.ll: $(GO_SOURCES) $(IRX_FILES) $(MAKEFILES_) | $(BUILD)
 	@echo "  TINYGO  $@"
 	$(Q)mkdir -p $(@D)
 	$(Q)CGO_CFLAGS="$(CGO_CFLAGS)" $(TINYGO) build $(TINYGO_FLAGS) $($*_TINYGO_FLAGS) -o $@ ./$*
@@ -167,18 +165,10 @@ $(BUILD)/loader.o: loader/loader.c | $(BUILD)
 	@echo "  EE_CC   $@"
 	$(Q)$(DOCKER) $(EE_CC) $(EE_CFLAGS) -c -o $@ $<
 
-# Binary resources -> objects (bin2c from the ps2sdk, symbol = file name).
-RESOURCES := $(notdir $(basename $(wildcard resources/*.raw resources/*.fnt)))
-define BIN2O
-	@echo "  BIN2O   $@"
-	$(Q)$(DOCKER) sh -c 'bin2c $(1) $(basename $@).c $* && $(EE_CC) -c -o $@ $(basename $@).c && rm $(basename $@).c'
-endef
-
-$(patsubst %,$(BUILD)/%.o,$(RESOURCES)): $(BUILD)/%.o: $$(wildcard resources/%.raw resources/%.fnt) | $(BUILD)
-	$(call BIN2O,$<)
-
-$(patsubst %,$(BUILD)/%.o,$(IRX)): $(BUILD)/%.o: | $(BUILD)
-	$(call BIN2O,$(PS2SDK_IMG)/iop/irx/$*.irx)
+# IOP modules from the ps2sdk in the image, for the resources package.
+resources/%.irx:
+	@echo "  IRX     $@"
+	$(Q)$(DOCKER) cp $(PS2SDK_IMG)/iop/irx/$*.irx $@
 
 # Keep intermediate files (.ll, .o) instead of deleting them after the link.
 .SECONDARY:

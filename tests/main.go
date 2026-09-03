@@ -19,6 +19,7 @@ func main() {
 		{Name: "atomics", Fn: testAtomics},
 		{Name: "cgo-abi", Fn: testCgoABI},
 		{Name: "embed", Fn: testEmbed},
+		{Name: "irx-load", Fn: testIRX},
 		{Name: "gc-stress", Fn: testGCStress},
 		{Name: "memstats", Fn: testMemStats},
 		{Name: "gc-roots", Fn: testGCRoots},

@@ -30,3 +30,5 @@ build/
 
 # local build settings (paths to ps2dev, tinygo, clang)
 config.mk
+# IOP modules copied from the ps2sdk for the resources package
+resources/*.irx
