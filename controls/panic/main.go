@@ -1,4 +1,5 @@
-// Negative control: an unrecovered panic must be reported as CRASH.
+// Negative control: an unrecovered panic (outside any case) must be reported
+// as CRASH. The runtime prints "panic: ..." and "runtime: abort".
 package main
 
 import "ps2go/harness"
@@ -6,11 +7,8 @@ import "ps2go/harness"
 var m map[string]int
 
 func main() {
-	harness.Run([]harness.Case{
-		{Name: "ok", Fn: func() error { return nil }},
-		{Name: "panic", Fn: func() error {
-			m["boom"] = 1 // assignment to entry in nil map
-			return nil
-		}},
-	})
+	harness.Init()
+	harness.Log("about to panic outside a case")
+	m["boom"] = 1 // assignment to entry in nil map
+	harness.Log("not reached")
 }

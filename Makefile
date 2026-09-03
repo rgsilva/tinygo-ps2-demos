@@ -87,15 +87,18 @@ EE_CFLAGS = -D_EE -G0 -O2 -Wall -gdwarf-2 -gz -mxgot \
             -I$(PS2SDK_IMG)/ee/include -I$(PS2SDK_IMG)/common/include \
             -I$(PS2DEV_IMG)/gsKit/include
 
-# Link. The ps2sdk linker script is used as is; TinyGo's runtime needs three
-# extra symbols for the heap and stack. crt0 asks the kernel for a stack of
-# _stack_size bytes at the top of RAM, so the stack occupies
-# [0x02000000-_stack_size, 0x02000000) and the GC scans up to _stack_top.
+# Link. The ps2sdk linker script is used as is; TinyGo's runtime needs a few
+# extra symbols: heap bounds (replaced at runtime by a libc allocation), the
+# globals range the GC scans (.data through .bss), and the stack top. crt0
+# asks the kernel for a stack of _stack_size bytes at the top of RAM, so the
+# stack occupies [0x02000000-_stack_size, 0x02000000).
 EE_LINKFILE = $(PS2SDK_IMG)/ee/startup/linkfile
 EE_LDFLAGS  = -T$(EE_LINKFILE) \
               -Wl,--defsym=_heap_start=_end \
               -Wl,--defsym=_heap_end=0x02000000 \
               -Wl,--defsym=_stack_top=0x02000000 \
+              -Wl,--defsym=_globals_start=_fdata \
+              -Wl,--defsym=_globals_end=_end \
               -Wl,-zmax-page-size=128 -mhard-float -msingle-float
 EE_LIBS     = -L$(PS2SDK_IMG)/ee/lib -L$(PS2SDK_IMG)/ports/lib -L$(PS2DEV_IMG)/gsKit/lib \
               -lpatches -lfileXio -lpad -ldebug -lgskit_toolkit -lgskit -ldmakit -lpng -ljpeg -lz
