@@ -82,11 +82,6 @@ TINYGO_FLAGS = -gc conservative -target ps2 $(if $(filter 1,$(V)),-x)
 CLANG_FLAGS = -c -fno-pic --target=mips64el-unknown-none-gnuabin32 -mcpu=r5900 -mabi=n32 -mhard-float -msingle-float \
               -mxgot -mlittle-endian -fno-inline-functions
 
-# C for the EE (loader).
-EE_CFLAGS = -D_EE -G0 -O2 -Wall -gdwarf-2 -gz -mxgot \
-            -I$(PS2SDK_IMG)/ee/include -I$(PS2SDK_IMG)/common/include \
-            -I$(PS2DEV_IMG)/gsKit/include
-
 # Link. The linker script is the ps2sdk one with one section added in front
 # of .data: the Go program's own .data and .bss, bracketed by
 # _globals_start/_globals_end, which is the range the GC scans for roots.
@@ -119,8 +114,8 @@ $(DEMOS) $(TESTS) $(CONTROLS): %: $(BUILD)/%.elf
 $(BUILD):
 	$(Q)mkdir -p $@
 
-# Link: runtime glue, the program, the loader.
-$(BUILD)/%.elf: $(BUILD)/asm_mipsx.o $(BUILD)/%.o $(BUILD)/loader.o $(BUILD)/%.ld $(MAKEFILES_)
+# Link: runtime glue (assembly) and the program.
+$(BUILD)/%.elf: $(BUILD)/asm_mipsx.o $(BUILD)/%.o $(BUILD)/%.ld $(MAKEFILES_)
 	@echo "  LINK    $@"
 	$(Q)mkdir -p $(@D)
 	$(Q)$(DOCKER) sh -c '$(EE_OBJCOPY) --set-section-flags .bss=alloc,load,contents,data $(BUILD)/$*.o && \
@@ -160,10 +155,6 @@ $(BUILD)/%.o: $(BUILD)/%.ll
 $(BUILD)/asm_mipsx.o: loader/asm_mipsx.S | $(BUILD)
 	@echo "  CLANG   $@"
 	$(Q)$(CLANG) $(CLANG_FLAGS) -o $@ $<
-
-$(BUILD)/loader.o: loader/loader.c | $(BUILD)
-	@echo "  EE_CC   $@"
-	$(Q)$(DOCKER) $(EE_CC) $(EE_CFLAGS) -c -o $@ $<
 
 # IOP modules from the ps2sdk in the image, for the resources package.
 resources/%.irx:
