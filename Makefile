@@ -76,6 +76,13 @@ CGO_CFLAGS = \
 
 TINYGO_FLAGS = -gc conservative -target ps2 $(if $(filter 1,$(V)),-x)
 
+# The runtime's assembly (stack scanning, longjmp, task switching) comes from
+# the TinyGo tree: tinygo build only emits LLVM IR for us, so it is assembled
+# here. Same files as extra-files in TinyGo's targets/ps2.json.
+TINYGOROOT  ?= $(shell $(TINYGO) env TINYGOROOT)
+RUNTIME_ASM  = $(TINYGOROOT)/src/runtime/asm_ps2.S $(TINYGOROOT)/src/internal/task/task_stack_ps2.S
+RUNTIME_OBJS = $(patsubst %.S,$(BUILD)/%.o,$(notdir $(RUNTIME_ASM)))
+
 # LLVM IR / assembly -> MIPS N32 object, for the EE.
 CLANG_FLAGS = -c -fno-pic --target=mips64el-unknown-none-gnuabin32 -mcpu=r5900 -mabi=n32 -mhard-float -msingle-float \
               -mxgot -mlittle-endian -fno-inline-functions
@@ -113,7 +120,7 @@ $(BUILD):
 	$(Q)mkdir -p $@
 
 # Link: runtime glue (assembly) and the program.
-$(BUILD)/%.elf: $(BUILD)/asm_mipsx.o $(BUILD)/%.o $(BUILD)/%.ld $(MAKEFILES_)
+$(BUILD)/%.elf: $(RUNTIME_OBJS) $(BUILD)/%.o $(BUILD)/%.ld $(MAKEFILES_)
 	@echo "  LINK    $@"
 	$(Q)mkdir -p $(@D)
 	$(Q)$(DOCKER) sh -c '$(EE_OBJCOPY) --set-section-flags .bss=alloc,load,contents,data $(BUILD)/$*.o && \
@@ -150,9 +157,11 @@ $(BUILD)/%.o: $(BUILD)/%.ll
 	@echo "  CLANG   $@"
 	$(Q)$(CLANG) $(CLANG_FLAGS) -o $@ $<
 
-$(BUILD)/asm_mipsx.o: loader/asm_mipsx.S | $(BUILD)
+$(BUILD)/asm_ps2.o: $(TINYGOROOT)/src/runtime/asm_ps2.S
+$(BUILD)/task_stack_ps2.o: $(TINYGOROOT)/src/internal/task/task_stack_ps2.S
+$(RUNTIME_OBJS): $(MAKEFILES_) | $(BUILD)
 	@echo "  CLANG   $@"
-	$(Q)$(CLANG) $(CLANG_FLAGS) -o $@ $<
+	$(Q)$(CLANG) $(CLANG_FLAGS) -o $@ $(filter %.S,$^)
 
 # IOP modules from the ps2sdk in the image, for the resources package.
 resources/%.irx:
