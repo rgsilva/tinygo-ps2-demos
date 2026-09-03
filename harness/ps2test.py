@@ -147,6 +147,7 @@ def main():
     ap.add_argument("--log", help="keep the PCSX2 log at this path")
     ap.add_argument("--probe", type=float, default=0, metavar="SECS", help="print the guest stats block every SECS")
     ap.add_argument("-q", "--quiet", action="store_true", help="only print the verdict line")
+    ap.add_argument("--pine-slot", type=int, default=28011, help="PINE slot of the PCSX2 instance (default 28011)")
     args = ap.parse_args()
 
     elf = os.path.abspath(args.elf)
@@ -231,7 +232,7 @@ def main():
                 break
             if pine is None and block_addr is not None:
                 try:
-                    pine = Pine()
+                    pine = Pine(args.pine_slot)
                 except OSError:
                     pass
             if pine is not None and next_probe and now >= next_probe:

@@ -1,0 +1,309 @@
+[    0.0083] Program Path: /home/ricardo/dev/ps2go/tools/pcsx2/squashfs-root/usr/bin/pcsx2-qt
+[    0.0083] AppRoot Directory: /home/ricardo/dev/ps2go/tools/pcsx2/squashfs-root/usr/bin
+[    0.0083] Resources Directory: /home/ricardo/dev/ps2go/tools/pcsx2/squashfs-root/usr/bin/resources
+[    0.0083] DataRoot Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2
+[    0.0083] Loading config from /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/inis/PCSX2.ini.
+[    0.0086] Loading secrets from /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/inis/secrets.ini.
+[    0.0090] BIOS Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/bios
+[    0.0090] Snapshots Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/snaps
+[    0.0090] Savestates Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/sstates
+[    0.0090] MemoryCards Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/memcards
+[    0.0090] Logs Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/logs
+[    0.0090] Cheats Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/cheats
+[    0.0090] Patches Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/patches
+[    0.0090] Covers Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/covers
+[    0.0090] Game Settings Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/gamesettings
+[    0.0090] Resources Directory: /home/ricardo/dev/ps2go/tools/pcsx2/squashfs-root/usr/bin/resources
+[    0.0090] User Resources Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/resources
+[    0.0090] Cache Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/cache
+[    0.0090] Textures Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/textures
+[    0.0090] Input Profile Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/inputprofiles
+[    0.0090] Video Dumping Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/videos
+[    0.0090] Debugger Layouts Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/inis/debuggerlayouts
+[    0.0090] Debugger Settings Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/inis/debuggersettings
+[    0.0092] Loaded translation file for language en-US
+[    0.0148] PCSX2 v2.9.12
+[    0.0148] Savestate version: 0x9a590000
+[    0.0148] 
+[    0.0148] 
+[    0.0148] Host Machine Init:
+[    0.0149]   Operating System = Ubuntu 24.04
+[    0.0149]   Available RAM    = 13967 MB (13.64 GB)
+[    0.0149]   Physical RAM     = 15986 MB (15.61 GB)
+[    0.0149] 
+[    0.0149]   Processor        = Intel Core i5-10400
+[    0.0149]   Core Count       = 4 cores
+[    0.0149]   Thread Count     = 8 threads
+[    0.0149]   Cluster Count    = 1 clusters
+[    0.0149] CPU Extensions Detected:
+[    0.0149]   AVX AVX2
+[    0.0149] 
+[    0.0149] Allocating host memory for virtual systems...
+[    0.0150]   EE Main Memory                   @ 0x00007F3F2F200000 -> 0x00007F3F38100000 [143mb]
+[    0.0150]   IOP Main Memory                  @ 0x00007F3F38100000 -> 0x00007F3F40200000 [129mb]
+[    0.0150]   VU0/1 On-Chip Memory             @ 0x00007F3F40200000 -> 0x00007F3F40300000 [1mb]
+[    0.0150]   VTLB Virtual Map                 @ 0x00007F3F40300000 -> 0x00007F3F40B00000 [8mb]
+[    0.0150]   VTLB Address Map                 @ 0x00007F3F40B00000 -> 0x00007F3F40F00000 [4mb]
+[    0.0150]   R5900 Recompiler Cache           @ 0x00007F3F40F00000 -> 0x00007F3F44F00000 [64mb]
+[    0.0150]   R3000A Recompiler Cache          @ 0x00007F3F44F00000 -> 0x00007F3F46F00000 [32mb]
+[    0.0150]   Micro VU0 Recompiler Cache       @ 0x00007F3F47F00000 -> 0x00007F3F4BF00000 [64mb]
+[    0.0150]   Micro VU1 Recompiler Cache       @ 0x00007F3F4BF00000 -> 0x00007F3F4FF00000 [64mb]
+[    0.0150]   VIF0 Unpack Recompiler Cache     @ 0x00007F3F46F00000 -> 0x00007F3F47700000 [8mb]
+[    0.0150]   VIF1 Unpack Recompiler Cache     @ 0x00007F3F47700000 -> 0x00007F3F47F00000 [8mb]
+[    0.0150]   VIF Unpack Recompiler Cache      @ 0x00007F3F4FF00000 -> 0x00007F3F50000000 [1mb]
+[    0.0150]   GS Software Renderer             @ 0x00007F3F50000000 -> 0x00007F3F54000000 [64mb]
+[    0.0167] Fastmem area: 0x7f3e2f200000 - 0x7f3f2f1fffff
+[    0.0174] Generating SSE-optimized unpacking functions for VIF interpreters...
+[    0.0175] Unpack function generation complete.  Generated function statistics:
+[    0.0175]   Reserved buffer    : 1048576 bytes @ 0x00007F3F4FF00000
+[    0.0175]   x86 code generated : 7422 bytes
+[    0.0175] 
+[    0.0178] SDLInputSource: Using Controller DB from resources.
+[    0.0353] SDLInputSource: 759 gamepad mappings are loaded.
+[    0.0675] Loading BIOS...
+[    0.0675] Searching for a BIOS image in '/home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/bios'...
+[    0.0676] BIOS Found: USA     v02.00(14/06/2004)  Console 20040614-100909
+[    0.0676] Using BIOS '/home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/bios/SCPH-70012_BIOS_V12_USA_200.BIN' (USA     v02.00(14/06/2004)  Console 20040614-100909 USA)
+[    0.0676] BIOS Found: USA     v02.00(14/06/2004)  Console 20040614-100909
+[    0.0699] BIOS rom1 module not found, skipping...
+[    0.0700] BIOS rom2 module not found, skipping...
+[    0.0700] Mechacon version: 0x00020603
+[    0.0700] Opening CDVD...
+[    0.0711] Initializing Elf: 2059940 bytes
+[    0.0713] Disc changed to .
+[    0.0713]   Name: gcexp [?]
+[    0.0713]   Serial: gcexp
+[    0.0713]   Version: 
+[    0.0713]   CRC: 57A9AF4B
+[    0.0713] No game settings found (tried '/home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/gamesettings/57A9AF4B.ini')
+[    0.0713] Applying settings...
+[    0.0716] [Unsafe Settings] Graphics API is not set to Automatic. This may cause performance problems and graphical issues.
+[    0.0716] OSD [unsafe_settings_warning]:  Graphics API is not set to Automatic. This may cause performance problems and graphical issues.
+[    0.0716] GameDB: Has not been initialized yet, initializing...
+[    0.0820] PINE: New client with FD 17 connected.
+[    0.1232] GameDB: 12841 games on record (loaded in 51.55ms)
+[    0.1267] Reopening memory cards...
+[    0.1267] McdSlot 0 [File]: Mcd001.ps2 [8 MB, UNFORMATTED]
+[    0.1268] McdSlot 1 [File]: Mcd002.ps2 [8 MB, UNFORMATTED]
+[    0.1276] HLE Host: Set 'host:' root path to: /home/ricardo/dev/ps2go/experiments/gc/build-gc-precise
+[    0.1277] EE/iR5900 Recompiler Reset
+[    0.1744] iR3000A Recompiler reset.
+[    0.1856] mVU Reset
+[    0.1859] mVU Reset
+[    0.1934] Resetting host memory for virtual systems...
+[    0.4452] Time Zone Offset: GMT+00:00
+[    0.4452] Time Zone Location: London
+[    0.4452] DST: Winter Time
+[    0.4452] Time Format: 24-Hour
+[    0.4452] Date Format: YYYY/MM/DD
+[    0.4452] System Time Basis: Operating System Time
+[    0.4452] Resulting System Time: 2026-09-03 17:48:04
+[    0.4452] Close virtual disk tray
+[    0.4452] Media already loaded (fast boot)
+[    0.4452] Opening GS...
+[    0.4458] acquireRenderWindow() recreate=true fullscreen=false render_to_main=false surfaceless=false
+[    0.4489] (GetRefreshRateFromXRandR) Modeline is invalid: 0/0/0
+[    0.4489] Surface refresh rate: 60 Hz
+[    0.4788] VK: Enabling extension: VK_KHR_surface
+[    0.4788] VK: Enabling extension: VK_KHR_xlib_surface
+[    0.4788] VK: Enabling extension: VK_EXT_surface_maintenance1
+[    0.4788] VK: Enabling extension: VK_KHR_get_surface_capabilities2
+[    0.4865] No GPU requested, using first (llvmpipe (LLVM 20.1.2, 256 bits))
+[    0.4870] 1 vulkan queue families
+[    0.4875] VK: Enabling extension: VK_KHR_swapchain
+[    0.4875] VK: Enabling extension: VK_KHR_push_descriptor
+[    0.4875] VK: Enabling extension: VK_EXT_provoking_vertex
+[    0.4875] VK: Enabling extension: VK_EXT_memory_budget
+[    0.4875] VK: Enabling extension: VK_EXT_calibrated_timestamps
+[    0.4875] VK: Enabling extension: VK_EXT_rasterization_order_attachment_access
+[    0.4875] VK: Enabling extension: VK_EXT_attachment_feedback_loop_layout
+[    0.4875] VK: Enabling extension: VK_EXT_line_rasterization
+[    0.4875] VK: Enabling extension: VK_KHR_driver_properties
+[    0.4875] VK: Enabling extension: VK_EXT_swapchain_maintenance1
+[    0.4875] VK: Enabling extension: VK_EXT_fragment_shader_interlock
+[    0.5013] GPU timing is supported (TS=1 TS valid bits=64, TS period=1.000000)
+[    0.5013] GPU pipeline statistics is supported
+[    0.5013] VK_EXT_provoking_vertex is supported
+[    0.5013] VK_EXT_memory_budget is supported
+[    0.5013] VK_EXT_calibrated_timestamps is supported
+[    0.5013] VK_EXT_rasterization_order_attachment_access is supported
+[    0.5013] VK_EXT_swapchain_maintenance1 is supported
+[    0.5013] VK_EXT_full_screen_exclusive is NOT supported
+[    0.5013] VK_KHR_driver_properties is supported
+[    0.5013] VK_EXT_attachment_feedback_loop_layout is supported
+[    0.5013] VK_EXT_fragment_shader_interlock is supported
+[    0.5014] Read 85 entries from '/home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/cache/vulkan_shaders.idx'
+[    0.5017] Creating a swap chain with 3 images in present mode VK_PRESENT_MODE_IMMEDIATE_KHR
+[    0.5030] Optional features: primitive_id texture_barrier framebuffer_fetch provoking_vertex_last vs_expand
+[    0.5030] Using hardware for point expansion and hardware for line expansion.
+[    0.6440] Vulkan Graphics Driver Info:
+[    0.6440] Driver 25.2.8
+[    0.6440] Vulkan 1.4.318
+[    0.6440] Conformance Version 1.3.1.1
+[    0.6440] Mesa 25.2.8-0ubuntu0.24.04.2 (LLVM 20.1.2)
+[    0.6440] llvmpipe
+[    0.6440] llvmpipe (LLVM 20.1.2, 256 bits)
+[    0.6466] Opening SPU2...
+[    0.6477] Creating Cubeb audio stream, sample rate = 48000, expansion = Disabled, buffer = 50, latency = 20, stretching enabled, driver = , device = 
+[    0.6525] Minimum latency: 40 ms (1920 audio frames)
+[    0.6525] Minimum latency is above requested latency: 1920 vs 960, adjusting to compensate.
+[    0.6527] Allocated buffer of 38400 frames for buffer of 50 ms [expansion Disabled (block size 2048), stretch enabled, target size 2432].
+[    0.6529] ReportErrorAsync: Error: Failed to create or configure audio stream, falling back to null output. The error was:
+[    0.6529] cubeb_stream_init() failed: CUBEB_ERROR (-1)
+[    0.6529] Allocated buffer of 2432 frames for buffer of 50 ms [expansion Disabled (block size 2048), stretch disabled, target size 2432].
+[    0.6529] Initializing Pad...
+[    0.6529] Initializing SIO2...
+[    0.6529] Initializing SIO0...
+[    0.6529] Opening DEV9...
+[    0.6529] DEV9: DEV9init
+[    0.6530] DEV9: DEV9init2
+[    0.6530] DEV9: DEV9init3
+[    0.6569] DEV9: DEV9init ok
+[    0.6569] DEV9: DEV9open
+[    0.6569] Opening USB...
+[    0.6569] Opening FW...
+[    0.6571] Frame rate: 60, target speed: 1, target frame rate: 60, ticks per frame: 16666666
+[    0.6613] VM subsystems initialized in 593.90 ms
+[    0.6618] Failed to inhibit screen saver.
+[    0.6619] Failed to inhibit screen saver.
+[    0.6797] # Initialize memory (rev:3.70, ctm:196Mhz, cpuclk:147Mhz detected)
+[    0.6938] R3000 Debugger: Branch to 0x890 (SYSMEM). Clearing modules.
+[    0.6954] RegisterLibraryEntries: excepman version 1.01
+[    0.6961] RegisterLibraryEntries:  intrman version 1.02
+[    0.6962] RegisterLibraryEntries:   ssbusc version 1.01
+[    0.6969] RegisterLibraryEntries:  dmacman version 1.02
+[    0.6972] RegisterLibraryEntries:  timrman version 1.01
+[    0.6974] RegisterLibraryEntries:  sysclib version 1.01
+[    0.6975] RegisterLibraryEntries:    stdio version 1.01
+[    0.6975] RegisterLibraryEntries:  heaplib version 1.01
+[    0.6978] FW: read mem 0x1f80847c: 0x10000001
+[    0.6979] FW: write mem 0x1f808414: 0x417f0000
+[    0.6979] FW: read mem 0x1f808400: 0xffc00001
+[    0.6979] FW: write mem 0x1f80844c: 0xffffffff
+[    0.6979] FW: write mem 0x1f808420: 0xffffffff
+[    0.6979] FW: write mem 0x1f808428: 0xffffffff
+[    0.6979] FW: write mem 0x1f808430: 0xffffffff
+[    0.6986] RegisterLibraryEntries:   thbase version 1.01
+[    0.6987] RegisterLibraryEntries:  thevent version 1.01
+[    0.6987] RegisterLibraryEntries:  thsemap version 1.01
+[    0.6987] RegisterLibraryEntries:  thmsgbx version 1.01
+[    0.6987] RegisterLibraryEntries:  thfpool version 1.01
+[    0.6988] RegisterLibraryEntries:  thvpool version 1.01
+[    0.6996] RegisterLibraryEntries:   vblank version 1.01
+[    0.7000] RegisterLibraryEntries:    ioman version 1.02
+[    0.7006] RegisterLibraryEntries:  modload version 1.01
+[    0.7008] RegisterLibraryEntries:   romdrv version 2.01
+[    0.7010] RegisterLibraryEntries:    stdio version 1.02
+[    0.7013] RegisterLibraryEntries:   sifman version 1.01
+[    0.7021] 
+[    0.7021] PlayStation 2 ======== Hard reset boot
+[    0.7023]  ROMGEN=2004-0614, IOP info (CPUID=1f, CACH_CONFIG=0, 2MB, IOP mode)
+[    0.7024]  <20040614-100909,ROMconf,PS20200AC20040614.bin:11696>
+[    0.7057] # Total accessable memory size: 32 MB (B:2:8:0) (370:2:7c30)
+[    0.7068] # TLB spad=0 kernel=1:12 default=13:30 extended=31:38
+[    0.7862] # Initialize Start.
+[    0.7866] # Initialize GS ...
+[    0.7866] # Initialize INTC ...
+[    0.7866] # Initialize TIMER ...
+[    0.7867] # Initialize DMAC ...
+[    0.7868] # Initialize VU1 ...
+[    0.7870] # Initialize VIF1 ...
+[    0.7871] # Initialize GIF ...
+[    0.7871] # Initialize VU0 ...
+[    0.7872] # Initialize VIF0 ...
+[    0.7872] # Initialize IPU ...
+[    0.7873] # Initialize FPU ...
+[    0.7874] # Initialize User Memory ...
+[    0.8166] # Initialize Scratch Pad ...
+[    0.8167] # Initialize Done.
+[    0.8174] 
+[    0.8174] EE DECI2 Manager version 0.06 Feb  6 2003 08:38:48
+[    0.8174]   CPUID=2e20, BoardID=0, ROMGEN=2004-0614, 32M
+[    0.8174] 
+[    0.8176] RegisterLibraryEntries:   sifcmd version 1.01
+[    0.8191] Initializing Elf: 2059940 bytes
+[    0.8200] ELF Loading: host:gcexp.elf, Game CRC = 57A9AF4B, EntryPoint = 0x00100AE0
+[    0.8224] RegisterLibraryEntries:  cdvdman version 1.01
+[    0.8298] RegisterLibraryEntries:  cdvdfsv version 1.01
+[    0.8316] RegisterLibraryEntries:  secrman version 1.03
+[    0.8318] RegisterLibraryEntries:   eesync version 1.01
+[    0.8320] 
+[    0.8320] IOP Realtime Kernel Ver.0.9.1
+[    0.8320]     Copyright 1999 (C) Sony Computer Entertainment Inc. 
+[    0.8328] Reboot service module.(99/11/10)
+[    0.8353] cdvd driver module version 0.1.1 (C)SCEI
+[    0.8358] Load File service.(99/11/05)
+[    0.8358] Multi Threaded Fileio module.(99/11/15) 
+[    0.8358] iop heap service (99/11/03)
+[    0.8629] loadelf: fname host:gcexp.elf secname all
+[    0.8629] loadelf version 3.30
+[    0.8632] Input ELF format filename = host:gcexp.elf
+[    0.8637] 1 00100000 0005c688 ......
+[    0.8637] Loaded, host:gcexp.elf
+[    0.8638] start address 0x100ae0
+[    0.8638] gp address 00000000
+[    0.8643] # Restart Without Memory Clear.
+[    0.8787] # Initialize GS ...
+[    0.8787] # Initialize INTC ...
+[    0.8787] # Initialize TIMER ...
+[    0.8787] # Initialize DMAC ...
+[    0.8787] # Initialize VU1 ...
+[    0.8790] # Initialize VIF1 ...
+[    0.8790] # Initialize GIF ...
+[    0.8790] # Initialize VU0 ...
+[    0.8790] # Initialize VIF0 ...
+[    0.8791] # Initialize IPU ...
+[    0.8791] # Initialize FPU ...
+[    0.8791] # Initialize Scratch Pad ...
+[    0.8791] # Restart Without Memory Clear Done.
+[    0.8792] ELF host:gcexp.elf with entry point at 0x00100AE0 is executing.
+[    0.8792] ELF changed, active CRC 57A9AF4B (host:gcexp.elf)
+[    0.8796] Applying core settings...
+[    0.8803] Updating CPU configuration...
+[    0.8803] iR3000A Recompiler reset.
+[    0.8847] mVU Reset
+[    0.8847] mVU Reset
+[    0.9024] iR3000A Recompiler reset.
+[    0.9059] mVU Reset
+[    0.9060] mVU Reset
+[    0.9101] EE/iR5900 Recompiler Reset
+[    0.9250] BIOS: Successfully found the instruction pattern. Assuming the thread list is here: 8001a640
+[    0.9269] Warning: GetOsdConfigParam2 Reading extended language/version configs, may be incorrect!
+[    0.9481] PS2GO-BEGIN 15
+[    0.9485] PS2GO-CASE layout RUN
+[    0.9489] layout: text=0x100000 data=0x14fa80-0x15c688 bss=0x15c700-0x162cb0 sp=0x1ffea00
+[    0.9494] layout: heap=0x162e90-0x1962e90 (25165824 bytes) heapStart%16=0 heapStart%64=16
+[    1.0122] layout: before GC: inuse=1152 idle=24777504 objects=13 numgc=0 mallocs=13 frees=0 totalalloc=969
+[    1.3301] layout: after GC: inuse=912 idle=24777744 objects=13 numgc=1 mallocs=21 frees=8 totalalloc=1121
+[    1.3304] PS2GO-CASE layout PASS
+[    1.3961] PS2GO-CASE small-objects RUN
+[    4.2642] small: end: inuse=525600 idle=24253056 objects=12156 numgc=2 mallocs=306034 frees=293878 totalalloc=11995218
+[    4.2643] small: kept 6000 objects, natural GCs during run: 1
+[    4.2643] PS2GO-CASE small-objects PASS
+[    4.3297] PS2GO-CASE large-objects RUN
+[    4.5966] large: round 0 alloc 1048576: inuse=1032288 idle=23746368 objects=12181 numgc=2
+[    4.9638] large: round 0 alloc 1048576: inuse=2081024 idle=22697632 objects=12186 numgc=2
+[    5.3629] large: end of round 0: inuse=5248784 idle=19529872 objects=13586 numgc=2 mallocs=307464 frees=293878 totalalloc=16696354
+[    5.9300] large: round 1 alloc 1048576: inuse=5754960 idle=19023696 objects=13599 numgc=2
+[    6.1289] large: round 1 alloc 1048576: inuse=6803696 idle=17974960 objects=13604 numgc=2
+[    6.6125] large: end of round 1: inuse=5178176 idle=19600480 objects=2147 numgc=3 mallocs=308882 frees=306735 totalalloc=21397146
+[    7.2665] large: round 2 alloc 1048576: inuse=5684640 idle=19094016 objects=2162 numgc=3
+[    7.6301] large: round 2 alloc 1048576: inuse=6733376 idle=18045280 objects=2167 numgc=3
+[    8.0299] large: end of round 2: inuse=9901136 idle=14877520 objects=3567 numgc=3 mallocs=310302 frees=306735 totalalloc=26098191
+[    9.0308] large: round 3 alloc 1048576: inuse=10407312 idle=14371344 objects=3580 numgc=3
+[    9.2300] large: round 3 alloc 1048576: inuse=11456048 idle=13322608 objects=3585 numgc=3
+[    9.6971] large: end of round 3: inuse=8830016 idle=15948640 objects=2155 numgc=4 mallocs=311720 frees=309565 totalalloc=30798982
+[   10.7959] large: round 4 alloc 1048576: inuse=9336736 idle=15441920 objects=2170 numgc=4
+[   11.1637] large: round 4 alloc 1048576: inuse=10385472 idle=14393184 objects=2175 numgc=4
+[   11.5627] large: end of round 4: inuse=13553232 idle=11225424 objects=3575 numgc=4 mallocs=313140 frees=309565 totalalloc=35500284
+[   13.0127] large: round 5 alloc 1048576: inuse=14059408 idle=10719248 objects=3588 numgc=4
+[   13.2681] fatal error: out of memory
+[   13.2683] runtime: abort
+[   13.3159] PINE: Client disconnected.
+[   13.3285] (VMManager) Pausing...
+[   13.3303] Add 13 seconds play time to gcexp -> now 13
+[   13.4649] DEV9: DEV9close
+[   13.4692] Skipping updating pipeline cache '/home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/cache/vulkan_pipelines.bin' due to no changes.
+[   13.4724] DEV9: DEV9shutdown
+[   13.4725] NVRAM has not changed, not writing to disk.
+[   13.4838] Releasing host memory for virtual systems...

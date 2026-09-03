@@ -1,0 +1,466 @@
+[    0.0093] Program Path: /home/ricardo/dev/ps2go/tools/pcsx2/squashfs-root/usr/bin/pcsx2-qt
+[    0.0093] AppRoot Directory: /home/ricardo/dev/ps2go/tools/pcsx2/squashfs-root/usr/bin
+[    0.0093] Resources Directory: /home/ricardo/dev/ps2go/tools/pcsx2/squashfs-root/usr/bin/resources
+[    0.0093] DataRoot Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2
+[    0.0093] Loading config from /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/inis/PCSX2.ini.
+[    0.0096] Loading secrets from /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/inis/secrets.ini.
+[    0.0100] BIOS Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/bios
+[    0.0100] Snapshots Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/snaps
+[    0.0100] Savestates Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/sstates
+[    0.0100] MemoryCards Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/memcards
+[    0.0100] Logs Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/logs
+[    0.0100] Cheats Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/cheats
+[    0.0100] Patches Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/patches
+[    0.0100] Covers Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/covers
+[    0.0100] Game Settings Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/gamesettings
+[    0.0100] Resources Directory: /home/ricardo/dev/ps2go/tools/pcsx2/squashfs-root/usr/bin/resources
+[    0.0100] User Resources Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/resources
+[    0.0100] Cache Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/cache
+[    0.0100] Textures Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/textures
+[    0.0100] Input Profile Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/inputprofiles
+[    0.0100] Video Dumping Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/videos
+[    0.0100] Debugger Layouts Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/inis/debuggerlayouts
+[    0.0100] Debugger Settings Directory: /home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/inis/debuggersettings
+[    0.0102] Loaded translation file for language en-US
+[    0.0158] PCSX2 v2.9.12
+[    0.0158] Savestate version: 0x9a590000
+[    0.0158] 
+[    0.0158] 
+[    0.0158] Host Machine Init:
+[    0.0158]   Operating System = Ubuntu 24.04
+[    0.0158]   Available RAM    = 14400 MB (14.06 GB)
+[    0.0158]   Physical RAM     = 15986 MB (15.61 GB)
+[    0.0158] 
+[    0.0158]   Processor        = Intel Core i5-10400
+[    0.0158]   Core Count       = 4 cores
+[    0.0158]   Thread Count     = 8 threads
+[    0.0158]   Cluster Count    = 1 clusters
+[    0.0158] CPU Extensions Detected:
+[    0.0158]   AVX AVX2
+[    0.0158] 
+[    0.0158] Allocating host memory for virtual systems...
+[    0.0159]   EE Main Memory                   @ 0x0000749EAF200000 -> 0x0000749EB8100000 [143mb]
+[    0.0159]   IOP Main Memory                  @ 0x0000749EB8100000 -> 0x0000749EC0200000 [129mb]
+[    0.0159]   VU0/1 On-Chip Memory             @ 0x0000749EC0200000 -> 0x0000749EC0300000 [1mb]
+[    0.0159]   VTLB Virtual Map                 @ 0x0000749EC0300000 -> 0x0000749EC0B00000 [8mb]
+[    0.0159]   VTLB Address Map                 @ 0x0000749EC0B00000 -> 0x0000749EC0F00000 [4mb]
+[    0.0159]   R5900 Recompiler Cache           @ 0x0000749EC0F00000 -> 0x0000749EC4F00000 [64mb]
+[    0.0159]   R3000A Recompiler Cache          @ 0x0000749EC4F00000 -> 0x0000749EC6F00000 [32mb]
+[    0.0159]   Micro VU0 Recompiler Cache       @ 0x0000749EC7F00000 -> 0x0000749ECBF00000 [64mb]
+[    0.0159]   Micro VU1 Recompiler Cache       @ 0x0000749ECBF00000 -> 0x0000749ECFF00000 [64mb]
+[    0.0159]   VIF0 Unpack Recompiler Cache     @ 0x0000749EC6F00000 -> 0x0000749EC7700000 [8mb]
+[    0.0159]   VIF1 Unpack Recompiler Cache     @ 0x0000749EC7700000 -> 0x0000749EC7F00000 [8mb]
+[    0.0159]   VIF Unpack Recompiler Cache      @ 0x0000749ECFF00000 -> 0x0000749ED0000000 [1mb]
+[    0.0159]   GS Software Renderer             @ 0x0000749ED0000000 -> 0x0000749ED4000000 [64mb]
+[    0.0174] Fastmem area: 0x749daf200000 - 0x749eaf1fffff
+[    0.0180] Generating SSE-optimized unpacking functions for VIF interpreters...
+[    0.0181] Unpack function generation complete.  Generated function statistics:
+[    0.0181]   Reserved buffer    : 1048576 bytes @ 0x0000749ECFF00000
+[    0.0181]   x86 code generated : 7422 bytes
+[    0.0181] 
+[    0.0184] SDLInputSource: Using Controller DB from resources.
+[    0.0414] SDLInputSource: 759 gamepad mappings are loaded.
+[    0.0590] PINE: New client with FD 16 connected.
+[    0.0725] Loading BIOS...
+[    0.0725] Searching for a BIOS image in '/home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/bios'...
+[    0.0726] BIOS Found: USA     v02.00(14/06/2004)  Console 20040614-100909
+[    0.0726] Using BIOS '/home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/bios/SCPH-70012_BIOS_V12_USA_200.BIN' (USA     v02.00(14/06/2004)  Console 20040614-100909 USA)
+[    0.0726] BIOS Found: USA     v02.00(14/06/2004)  Console 20040614-100909
+[    0.0749] BIOS rom1 module not found, skipping...
+[    0.0749] BIOS rom2 module not found, skipping...
+[    0.0749] Mechacon version: 0x00020603
+[    0.0749] Opening CDVD...
+[    0.0760] Initializing Elf: 2077680 bytes
+[    0.0762] Disc changed to .
+[    0.0762]   Name: gcexp [?]
+[    0.0762]   Serial: gcexp
+[    0.0762]   Version: 
+[    0.0762]   CRC: BA0FCB47
+[    0.0762] No game settings found (tried '/home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/gamesettings/BA0FCB47.ini')
+[    0.0762] Applying settings...
+[    0.0765] [Unsafe Settings] Graphics API is not set to Automatic. This may cause performance problems and graphical issues.
+[    0.0765] OSD [unsafe_settings_warning]:  Graphics API is not set to Automatic. This may cause performance problems and graphical issues.
+[    0.0766] GameDB: Has not been initialized yet, initializing...
+[    0.1226] GameDB: 12841 games on record (loaded in 46.02ms)
+[    0.1260] Reopening memory cards...
+[    0.1261] McdSlot 0 [File]: Mcd001.ps2 [8 MB, UNFORMATTED]
+[    0.1261] McdSlot 1 [File]: Mcd002.ps2 [8 MB, UNFORMATTED]
+[    0.1269] HLE Host: Set 'host:' root path to: /home/ricardo/dev/ps2go/experiments/gc/build-gc-precise
+[    0.1270] EE/iR5900 Recompiler Reset
+[    0.1682] iR3000A Recompiler reset.
+[    0.1781] mVU Reset
+[    0.1783] mVU Reset
+[    0.1850] Resetting host memory for virtual systems...
+[    0.3894] Time Zone Offset: GMT+00:00
+[    0.3894] Time Zone Location: London
+[    0.3895] DST: Winter Time
+[    0.3895] Time Format: 24-Hour
+[    0.3895] Date Format: YYYY/MM/DD
+[    0.3895] System Time Basis: Operating System Time
+[    0.3895] Resulting System Time: 2026-09-03 18:11:17
+[    0.3895] Close virtual disk tray
+[    0.3895] Media already loaded (fast boot)
+[    0.3895] Opening GS...
+[    0.3900] acquireRenderWindow() recreate=true fullscreen=false render_to_main=false surfaceless=false
+[    0.3927] (GetRefreshRateFromXRandR) Modeline is invalid: 0/0/0
+[    0.3928] Surface refresh rate: 60 Hz
+[    0.4180] VK: Enabling extension: VK_KHR_surface
+[    0.4180] VK: Enabling extension: VK_KHR_xlib_surface
+[    0.4180] VK: Enabling extension: VK_EXT_surface_maintenance1
+[    0.4180] VK: Enabling extension: VK_KHR_get_surface_capabilities2
+[    0.4240] No GPU requested, using first (llvmpipe (LLVM 20.1.2, 256 bits))
+[    0.4245] 1 vulkan queue families
+[    0.4250] VK: Enabling extension: VK_KHR_swapchain
+[    0.4250] VK: Enabling extension: VK_KHR_push_descriptor
+[    0.4250] VK: Enabling extension: VK_EXT_provoking_vertex
+[    0.4250] VK: Enabling extension: VK_EXT_memory_budget
+[    0.4250] VK: Enabling extension: VK_EXT_calibrated_timestamps
+[    0.4250] VK: Enabling extension: VK_EXT_rasterization_order_attachment_access
+[    0.4250] VK: Enabling extension: VK_EXT_attachment_feedback_loop_layout
+[    0.4250] VK: Enabling extension: VK_EXT_line_rasterization
+[    0.4250] VK: Enabling extension: VK_KHR_driver_properties
+[    0.4250] VK: Enabling extension: VK_EXT_swapchain_maintenance1
+[    0.4250] VK: Enabling extension: VK_EXT_fragment_shader_interlock
+[    0.4366] GPU timing is supported (TS=1 TS valid bits=64, TS period=1.000000)
+[    0.4366] GPU pipeline statistics is supported
+[    0.4366] VK_EXT_provoking_vertex is supported
+[    0.4366] VK_EXT_memory_budget is supported
+[    0.4366] VK_EXT_calibrated_timestamps is supported
+[    0.4366] VK_EXT_rasterization_order_attachment_access is supported
+[    0.4366] VK_EXT_swapchain_maintenance1 is supported
+[    0.4366] VK_EXT_full_screen_exclusive is NOT supported
+[    0.4366] VK_KHR_driver_properties is supported
+[    0.4366] VK_EXT_attachment_feedback_loop_layout is supported
+[    0.4366] VK_EXT_fragment_shader_interlock is supported
+[    0.4367] Read 85 entries from '/home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/cache/vulkan_shaders.idx'
+[    0.4369] Creating a swap chain with 3 images in present mode VK_PRESENT_MODE_IMMEDIATE_KHR
+[    0.4378] Optional features: primitive_id texture_barrier framebuffer_fetch provoking_vertex_last vs_expand
+[    0.4378] Using hardware for point expansion and hardware for line expansion.
+[    0.5648] Vulkan Graphics Driver Info:
+[    0.5648] Driver 25.2.8
+[    0.5648] Vulkan 1.4.318
+[    0.5648] Conformance Version 1.3.1.1
+[    0.5648] Mesa 25.2.8-0ubuntu0.24.04.2 (LLVM 20.1.2)
+[    0.5648] llvmpipe
+[    0.5648] llvmpipe (LLVM 20.1.2, 256 bits)
+[    0.5673] Opening SPU2...
+[    0.5681] Creating Cubeb audio stream, sample rate = 48000, expansion = Disabled, buffer = 50, latency = 20, stretching enabled, driver = , device = 
+[    0.5717] Minimum latency: 40 ms (1920 audio frames)
+[    0.5717] Minimum latency is above requested latency: 1920 vs 960, adjusting to compensate.
+[    0.5718] Allocated buffer of 38400 frames for buffer of 50 ms [expansion Disabled (block size 2048), stretch enabled, target size 2432].
+[    0.5721] ReportErrorAsync: Error: Failed to create or configure audio stream, falling back to null output. The error was:
+[    0.5721] cubeb_stream_init() failed: CUBEB_ERROR (-1)
+[    0.5721] Allocated buffer of 2432 frames for buffer of 50 ms [expansion Disabled (block size 2048), stretch disabled, target size 2432].
+[    0.5721] Initializing Pad...
+[    0.5721] Initializing SIO2...
+[    0.5721] Initializing SIO0...
+[    0.5721] Opening DEV9...
+[    0.5721] DEV9: DEV9init
+[    0.5721] DEV9: DEV9init2
+[    0.5721] DEV9: DEV9init3
+[    0.5752] DEV9: DEV9init ok
+[    0.5752] DEV9: DEV9open
+[    0.5752] Opening USB...
+[    0.5752] Opening FW...
+[    0.5754] Frame rate: 60, target speed: 1, target frame rate: 60, ticks per frame: 16666666
+[    0.5796] VM subsystems initialized in 507.36 ms
+[    0.5800] Failed to inhibit screen saver.
+[    0.5801] Failed to inhibit screen saver.
+[    0.5976] # Initialize memory (rev:3.70, ctm:196Mhz, cpuclk:147Mhz detected)
+[    0.6085] R3000 Debugger: Branch to 0x890 (SYSMEM). Clearing modules.
+[    0.6098] RegisterLibraryEntries: excepman version 1.01
+[    0.6105] RegisterLibraryEntries:  intrman version 1.02
+[    0.6107] RegisterLibraryEntries:   ssbusc version 1.01
+[    0.6110] RegisterLibraryEntries:  dmacman version 1.02
+[    0.6115] RegisterLibraryEntries:  timrman version 1.01
+[    0.6118] RegisterLibraryEntries:  sysclib version 1.01
+[    0.6118] RegisterLibraryEntries:    stdio version 1.01
+[    0.6119] RegisterLibraryEntries:  heaplib version 1.01
+[    0.6125] FW: read mem 0x1f80847c: 0x10000001
+[    0.6125] FW: write mem 0x1f808414: 0x417f0000
+[    0.6125] FW: read mem 0x1f808400: 0xffc00001
+[    0.6125] FW: write mem 0x1f80844c: 0xffffffff
+[    0.6125] FW: write mem 0x1f808420: 0xffffffff
+[    0.6125] FW: write mem 0x1f808428: 0xffffffff
+[    0.6125] FW: write mem 0x1f808430: 0xffffffff
+[    0.6136] RegisterLibraryEntries:   thbase version 1.01
+[    0.6137] RegisterLibraryEntries:  thevent version 1.01
+[    0.6137] RegisterLibraryEntries:  thsemap version 1.01
+[    0.6138] RegisterLibraryEntries:  thmsgbx version 1.01
+[    0.6138] RegisterLibraryEntries:  thfpool version 1.01
+[    0.6138] RegisterLibraryEntries:  thvpool version 1.01
+[    0.6145] RegisterLibraryEntries:   vblank version 1.01
+[    0.6149] RegisterLibraryEntries:    ioman version 1.02
+[    0.6154] RegisterLibraryEntries:  modload version 1.01
+[    0.6156] RegisterLibraryEntries:   romdrv version 2.01
+[    0.6161] RegisterLibraryEntries:    stdio version 1.02
+[    0.6164] RegisterLibraryEntries:   sifman version 1.01
+[    0.6166] 
+[    0.6166] PlayStation 2 ======== Hard reset boot
+[    0.6168]  ROMGEN=2004-0614, IOP info (CPUID=1f, CACH_CONFIG=0, 2MB, IOP mode)
+[    0.6169]  <20040614-100909,ROMconf,PS20200AC20040614.bin:11696>
+[    0.6197] # Total accessable memory size: 32 MB (B:2:8:0) (370:2:7c30)
+[    0.6208] # TLB spad=0 kernel=1:12 default=13:30 extended=31:38
+[    0.7046] # Initialize Start.
+[    0.7052] # Initialize GS ...
+[    0.7052] # Initialize INTC ...
+[    0.7052] # Initialize TIMER ...
+[    0.7053] # Initialize DMAC ...
+[    0.7054] # Initialize VU1 ...
+[    0.7066] # Initialize VIF1 ...
+[    0.7067] # Initialize GIF ...
+[    0.7067] # Initialize VU0 ...
+[    0.7070] # Initialize VIF0 ...
+[    0.7070] # Initialize IPU ...
+[    0.7072] # Initialize FPU ...
+[    0.7072] # Initialize User Memory ...
+[    0.7388] # Initialize Scratch Pad ...
+[    0.7388] # Initialize Done.
+[    0.7395] 
+[    0.7395] EE DECI2 Manager version 0.06 Feb  6 2003 08:38:48
+[    0.7395]   CPUID=2e20, BoardID=0, ROMGEN=2004-0614, 32M
+[    0.7395] 
+[    0.7397] RegisterLibraryEntries:   sifcmd version 1.01
+[    0.7412] Initializing Elf: 2077680 bytes
+[    0.7421] ELF Loading: host:gcexp.elf, Game CRC = BA0FCB47, EntryPoint = 0x00100AE0
+[    0.7444] RegisterLibraryEntries:  cdvdman version 1.01
+[    0.7476] RegisterLibraryEntries:  cdvdfsv version 1.01
+[    0.7490] RegisterLibraryEntries:  secrman version 1.03
+[    0.7491] RegisterLibraryEntries:   eesync version 1.01
+[    0.7492] 
+[    0.7492] IOP Realtime Kernel Ver.0.9.1
+[    0.7492]     Copyright 1999 (C) Sony Computer Entertainment Inc. 
+[    0.7497] Reboot service module.(99/11/10)
+[    0.7515] cdvd driver module version 0.1.1 (C)SCEI
+[    0.7519] Load File service.(99/11/05)
+[    0.7519] Multi Threaded Fileio module.(99/11/15) 
+[    0.7520] iop heap service (99/11/03)
+[    0.7808] loadelf: fname host:gcexp.elf secname all
+[    0.7808] loadelf version 3.30
+[    0.7811] Input ELF format filename = host:gcexp.elf
+[    0.7815] 1 00100000 0005e208 ......
+[    0.7816] Loaded, host:gcexp.elf
+[    0.7816] start address 0x100ae0
+[    0.7816] gp address 00000000
+[    0.7820] # Restart Without Memory Clear.
+[    0.7969] # Initialize GS ...
+[    0.7969] # Initialize INTC ...
+[    0.7969] # Initialize TIMER ...
+[    0.7969] # Initialize DMAC ...
+[    0.7969] # Initialize VU1 ...
+[    0.7972] # Initialize VIF1 ...
+[    0.7972] # Initialize GIF ...
+[    0.7972] # Initialize VU0 ...
+[    0.7972] # Initialize VIF0 ...
+[    0.7972] # Initialize IPU ...
+[    0.7973] # Initialize FPU ...
+[    0.7973] # Initialize Scratch Pad ...
+[    0.7973] # Restart Without Memory Clear Done.
+[    0.7974] ELF host:gcexp.elf with entry point at 0x00100AE0 is executing.
+[    0.7974] ELF changed, active CRC BA0FCB47 (host:gcexp.elf)
+[    0.7976] Applying core settings...
+[    0.7998] Updating CPU configuration...
+[    0.7998] iR3000A Recompiler reset.
+[    0.8051] mVU Reset
+[    0.8051] mVU Reset
+[    0.8205] iR3000A Recompiler reset.
+[    0.8261] mVU Reset
+[    0.8261] mVU Reset
+[    0.8305] EE/iR5900 Recompiler Reset
+[    0.8531] BIOS: Successfully found the instruction pattern. Assuming the thread list is here: 8001a640
+[    0.8550] Warning: GetOsdConfigParam2 Reading extended language/version configs, may be incorrect!
+[    0.8668] PS2GO-BEGIN 19
+[    0.8670] PS2GO-CASE layout RUN
+[    0.8673] layout: text=0x100000 data=0x151280-0x15e208 bss=0x15e280-0x164820 sp=0x1ffe7f0
+[    0.8676] layout: heap=0x164a00-0x1964a00 (25165824 bytes) heapStart%16=0 heapStart%64=0
+[    0.9305] layout: before GC: inuse=784 idle=24777872 objects=12 numgc=0 mallocs=12 frees=0 totalalloc=608
+[    1.2485] layout: after GC: inuse=544 idle=24778112 objects=12 numgc=1 mallocs=20 frees=8 totalalloc=759
+[    1.2487] PS2GO-CASE layout PASS
+[    1.3140] PS2GO-CASE false-roots RUN
+[    1.5814] falseroot[globals]: addr=0x1512a4 value=0x164a00 (heap+0)
+[    1.5814] falseroot[globals]: addr=0x1512c4 value=0x7e0020 (heap+6796832)
+[    1.5815] falseroot[globals]: addr=0x151720 value=0x3b0027 (heap+2405927)
+[    1.5815] falseroot[globals]: addr=0x151724 value=0x18f003e (heap+24688190)
+[    1.5815] falseroot[globals]: addr=0x151808 value=0x164ae0 (heap+224)
+[    1.5815] falseroot[globals]: addr=0x151864 value=0x373063 (heap+2156131)
+[    1.5815] falseroot[globals]: addr=0x151e3c value=0xa22821 (heap+9166369)
+[    1.5815] falseroot[globals]: addr=0x151e40 value=0xc01025 (heap+11126309)
+[    1.5815] falseroot[globals]: addr=0x151e44 value=0xa22823 (heap+9166371)
+[    1.5816] falseroot[globals]: addr=0x151e50 value=0xa21821 (heap+9162273)
+[    1.5816] falseroot[globals]: addr=0x151e84 value=0x431024 (heap+2934308)
+[    1.5816] falseroot[globals]: addr=0x151ee8 value=0x431025 (heap+2934309)
+[    1.5816] falseroot[globals]: addr=0x151f48 value=0xc52821 (heap+11460129)
+[    1.5816] falseroot[globals]: addr=0x151f68 value=0xc5102b (heap+11453995)
+[    1.5816] falseroot[globals]: addr=0x151f78 value=0x861823 (heap+7327267)
+[    1.5816] falseroot[globals]: addr=0x151f80 value=0x651821 (heap+5164577)
+[    1.5816] falseroot[globals]: addr=0x151f84 value=0x463021 (heap+3139105)
+[    1.5816] falseroot[globals]: addr=0x151fa8 value=0xc51021 (heap+11453985)
+[    1.5817] falseroot[globals]: addr=0x151fec value=0xa62823 (heap+9428515)
+[    1.5817] falseroot[globals]: addr=0x151ff0 value=0xc52821 (heap+11460129)
+[    1.5817] falseroot[globals]: addr=0x151ff4 value=0xc5102b (heap+11453995)
+[    1.5817] falseroot[globals]: addr=0x152008 value=0x663021 (heap+5236257)
+[    1.5817] falseroot[globals]: addr=0x15200c value=0x651821 (heap+5164577)
+[    1.5817] falseroot[globals]: addr=0x152074 value=0xa0f025 (heap+9086501)
+[    1.5817] falseroot[globals]: addr=0x15207c value=0x80b825 (heap+6975013)
+[    1.5818] falseroot[globals]: addr=0x1522d0 value=0x431021 (heap+2934305)
+[    1.5818] falseroot[globals]: addr=0x152334 value=0x621016 (heap+4965910)
+[    1.5818] falseroot[globals]: addr=0x1523c8 value=0x801025 (heap+6932005)
+[    1.5818] falseroot[globals]: addr=0x152428 value=0x801025 (heap+6932005)
+[    1.5818] falseroot[globals]: addr=0x1524a8 value=0x43102b (heap+2934315)
+[    1.5818] falseroot[globals]: addr=0x1526e0 value=0x431021 (heap+2934305)
+[    1.5818] falseroot[globals]: addr=0x15273c value=0x99c804 (heap+8617476)
+[    1.5818] falseroot[globals]: addr=0x15274c value=0x19c827 (heap+228903)
+[    1.5819] falseroot[globals]: addr=0x152788 value=0x185302a (heap+24045098)
+[    1.5819] falseroot[globals]: addr=0x1527b8 value=0x18f182a (heap+24694314)
+[    1.5819] falseroot[globals]: addr=0x1527c8 value=0x1601825 (heap+21614117)
+[    1.5819] falseroot[globals]: addr=0x1527cc value=0x1455021 (heap+19858977)
+[    1.5819] falseroot[globals]: addr=0x1527d4 value=0x1515021 (heap+20645409)
+[    1.5819] falseroot[globals]: addr=0x152828 value=0x78382b (heap+6417963)
+[    1.5819] falseroot[globals]: addr=0x152838 value=0x661825 (heap+5230117)
+[    1.5819] falseroot[globals]: addr=0x15283c value=0x185302a (heap+24045098)
+[    1.5819] falseroot[globals]: addr=0x152840 value=0x781823 (heap+6409763)
+[    1.5820] falseroot[globals]: addr=0x152854 value=0x601025 (heap+4834853)
+[    1.5820] falseroot[globals]: addr=0x152880 value=0x831804 (heap+7130628)
+[    1.5820] falseroot[globals]: addr=0x152890 value=0x661824 (heap+5230116)
+[    1.5820] falseroot[globals]: addr=0x1528f4 value=0x601025 (heap+4834853)
+[    1.5820] falseroot[globals]: addr=0x152970 value=0x80a025 (heap+6968869)
+[    1.5820] falseroot[globals]: addr=0x152978 value=0x929821 (heap+8146465)
+[    1.5820] falseroot[globals]: addr=0x15297c value=0x431025 (heap+2934309)
+[    1.5820] falseroot[globals]: addr=0x152980 value=0xc0a825 (heap+11165221)
+[    1.5820] falseroot[globals]: addr=0x152984 value=0xa0b025 (heap+9070117)
+[    1.5821] falseroot[globals]: addr=0x1529cc value=0x72502b (heap+6030891)
+[    1.5821] falseroot[globals]: addr=0x1529d8 value=0x691825 (heap+5426725)
+[    1.5821] falseroot[globals]: addr=0x1529e8 value=0xeb182a (heap+13946410)
+[    1.5821] falseroot[globals]: addr=0x1529fc value=0x6b1821 (heap+5557793)
+[    1.5821] falseroot[globals]: addr=0x152a0c value=0x1831821 (heap+23907873)
+[    1.5821] falseroot[globals]: addr=0x152a10 value=0x18e7021 (heap+24651297)
+[    1.5821] falseroot[globals]: addr=0x152a58 value=0x18d1821 (heap+24563233)
+[    1.5821] falseroot[globals]: addr=0x152bc0 value=0x1435021 (heap+19727905)
+[    1.5822] falseroot[globals]: addr=0x152bcc value=0x6a5021 (heap+5506593)
+[    1.5970] falseroot[stack]: addr=0x1ffe8c0 value=0x164d00 (heap+768)
+[    1.5970] falseroot[stack]: addr=0x1ffe8c4 value=0x164d08 (heap+776)
+[    1.5970] falseroot[stack]: addr=0x1ffe8d4 value=0x164d00 (heap+768)
+[    1.5970] falseroot[stack]: addr=0x1ffe8f4 value=0x164d00 (heap+768)
+[    1.5971] falseroot[stack]: addr=0x1ffe934 value=0x164d00 (heap+768)
+[    1.5971] falseroot[stack]: addr=0x1ffe968 value=0x164d00 (heap+768)
+[    1.5971] falseroot[stack]: addr=0x1ffe9b0 value=0x1661f0 (heap+6128)
+[    1.5971] falseroot[stack]: addr=0x1ffe9f4 value=0x1000001 (heap+15316481)
+[    1.5971] falseroot[stack]: addr=0x1ffea28 value=0x1010101 (heap+15382273)
+[    1.5972] falseroot[stack]: addr=0x1ffea2c value=0x1010101 (heap+15382273)
+[    1.5972] falseroot[stack]: addr=0x1ffea34 value=0x1000001 (heap+15316481)
+[    1.5972] falseroot[stack]: addr=0x1ffea44 value=0x1000001 (heap+15316481)
+[    1.5972] falseroot[stack]: addr=0x1ffeac0 value=0x1800011 (heap+23705105)
+[    1.5972] falseroot[stack]: addr=0x1ffeaec value=0x164b30 (heap+304)
+[    1.5973] falseroot[stack]: addr=0x1ffeb2c value=0x164cc0 (heap+704)
+[    1.5973] falseroot[stack]: addr=0x1ffef20 value=0x1661f0 (heap+6128)
+[    1.5974] falseroots: globals 0x151280-0x164820: 238 heap-range words of 19816; stack 0x1ffe880-0x2000000: 16 heap-range words of 1504
+[    1.5974] PS2GO-CASE false-roots PASS
+[    1.6483] PS2GO-CASE false-retention RUN
+[    2.9403] retention[zeros]: allocated 12223 KB dead; after GC1 inuse=8230 KB (retained 8230 KB, 25 objs), after GC2 8230 KB (25 objs)
+[    5.8140] retention[high-bit-set]: allocated 12223 KB dead; after GC1 inuse=11305 KB (retained 3073 KB, 3 objs), after GC2 11305 KB (3 objs)
+[    8.1991] retention[sequential-bytes]: allocated 12223 KB dead; after GC1 inuse=15409 KB (retained 4103 KB, 7 objs), after GC2 15409 KB (7 objs)
+[   10.2642] retention[0x00RRGGBB-words]: allocated 8123 KB dead; after GC1 inuse=14383 KB (retained -1026 KB, -3 objs), after GC2 14383 KB (-3 objs)
+[   12.4646] retention[small-ints]: allocated 9149 KB dead; after GC1 inuse=15409 KB (retained 1025 KB, 1 objs), after GC2 15409 KB (1 objs)
+[   12.4647] PS2GO-CASE false-retention PASS
+[   12.5149] PS2GO-CASE drop-patterns RUN
+[   13.3979] drop[same-frame nil]: retained 514 KB / 2003 objects
+[   13.8976] drop[dropped in callee]: retained 478 KB / 2003 objects
+[   14.3150] drop[same-frame overwrite]: retained 0 KB / 3 objects
+[   14.6978] drop[global nil]: retained 0 KB / 6 objects
+[   14.6979] PS2GO-CASE drop-patterns PASS
+[   14.7493] PS2GO-CASE false-roots-2 RUN
+[   15.0802] falseroot[globals]: addr=0x1512a4 value=0x164a00 (heap+0)
+[   15.0803] falseroot[globals]: addr=0x1512c4 value=0x7e0020 (heap+6796832)
+[   15.0803] falseroot[globals]: addr=0x151720 value=0x3b0027 (heap+2405927)
+[   15.0803] falseroot[globals]: addr=0x151724 value=0x18f003e (heap+24688190)
+[   15.0803] falseroot[globals]: addr=0x151808 value=0x164ae0 (heap+224)
+[   15.0803] falseroot[globals]: addr=0x151864 value=0x373063 (heap+2156131)
+[   15.0804] falseroot[globals]: addr=0x151e3c value=0xa22821 (heap+9166369)
+[   15.0804] falseroot[globals]: addr=0x151e40 value=0xc01025 (heap+11126309)
+[   15.0804] falseroot[globals]: addr=0x151e44 value=0xa22823 (heap+9166371)
+[   15.0804] falseroot[globals]: addr=0x151e50 value=0xa21821 (heap+9162273)
+[   15.0804] falseroot[globals]: addr=0x151e84 value=0x431024 (heap+2934308)
+[   15.0804] falseroot[globals]: addr=0x151ee8 value=0x431025 (heap+2934309)
+[   15.0804] falseroot[globals]: addr=0x151f48 value=0xc52821 (heap+11460129)
+[   15.0804] falseroot[globals]: addr=0x151f68 value=0xc5102b (heap+11453995)
+[   15.0805] falseroot[globals]: addr=0x151f78 value=0x861823 (heap+7327267)
+[   15.0805] falseroot[globals]: addr=0x151f80 value=0x651821 (heap+5164577)
+[   15.0805] falseroot[globals]: addr=0x151f84 value=0x463021 (heap+3139105)
+[   15.0805] falseroot[globals]: addr=0x151fa8 value=0xc51021 (heap+11453985)
+[   15.0805] falseroot[globals]: addr=0x151fec value=0xa62823 (heap+9428515)
+[   15.0805] falseroot[globals]: addr=0x151ff0 value=0xc52821 (heap+11460129)
+[   15.0805] falseroot[globals]: addr=0x151ff4 value=0xc5102b (heap+11453995)
+[   15.0806] falseroot[globals]: addr=0x152008 value=0x663021 (heap+5236257)
+[   15.0806] falseroot[globals]: addr=0x15200c value=0x651821 (heap+5164577)
+[   15.0806] falseroot[globals]: addr=0x152074 value=0xa0f025 (heap+9086501)
+[   15.0806] falseroot[globals]: addr=0x15207c value=0x80b825 (heap+6975013)
+[   15.0806] falseroot[globals]: addr=0x1522d0 value=0x431021 (heap+2934305)
+[   15.0806] falseroot[globals]: addr=0x152334 value=0x621016 (heap+4965910)
+[   15.0806] falseroot[globals]: addr=0x1523c8 value=0x801025 (heap+6932005)
+[   15.0806] falseroot[globals]: addr=0x152428 value=0x801025 (heap+6932005)
+[   15.0807] falseroot[globals]: addr=0x1524a8 value=0x43102b (heap+2934315)
+[   15.0807] falseroot[globals]: addr=0x1526e0 value=0x431021 (heap+2934305)
+[   15.0807] falseroot[globals]: addr=0x15273c value=0x99c804 (heap+8617476)
+[   15.0807] falseroot[globals]: addr=0x15274c value=0x19c827 (heap+228903)
+[   15.0807] falseroot[globals]: addr=0x152788 value=0x185302a (heap+24045098)
+[   15.0807] falseroot[globals]: addr=0x1527b8 value=0x18f182a (heap+24694314)
+[   15.0808] falseroot[globals]: addr=0x1527c8 value=0x1601825 (heap+21614117)
+[   15.0808] falseroot[globals]: addr=0x1527cc value=0x1455021 (heap+19858977)
+[   15.0808] falseroot[globals]: addr=0x1527d4 value=0x1515021 (heap+20645409)
+[   15.0808] falseroot[globals]: addr=0x152828 value=0x78382b (heap+6417963)
+[   15.0808] falseroot[globals]: addr=0x152838 value=0x661825 (heap+5230117)
+[   15.0808] falseroot[globals]: addr=0x15283c value=0x185302a (heap+24045098)
+[   15.0808] falseroot[globals]: addr=0x152840 value=0x781823 (heap+6409763)
+[   15.0808] falseroot[globals]: addr=0x152854 value=0x601025 (heap+4834853)
+[   15.0808] falseroot[globals]: addr=0x152880 value=0x831804 (heap+7130628)
+[   15.0809] falseroot[globals]: addr=0x152890 value=0x661824 (heap+5230116)
+[   15.0809] falseroot[globals]: addr=0x1528f4 value=0x601025 (heap+4834853)
+[   15.0809] falseroot[globals]: addr=0x152970 value=0x80a025 (heap+6968869)
+[   15.0809] falseroot[globals]: addr=0x152978 value=0x929821 (heap+8146465)
+[   15.0809] falseroot[globals]: addr=0x15297c value=0x431025 (heap+2934309)
+[   15.0809] falseroot[globals]: addr=0x152980 value=0xc0a825 (heap+11165221)
+[   15.0809] falseroot[globals]: addr=0x152984 value=0xa0b025 (heap+9070117)
+[   15.0809] falseroot[globals]: addr=0x1529cc value=0x72502b (heap+6030891)
+[   15.0810] falseroot[globals]: addr=0x1529d8 value=0x691825 (heap+5426725)
+[   15.0810] falseroot[globals]: addr=0x1529e8 value=0xeb182a (heap+13946410)
+[   15.0810] falseroot[globals]: addr=0x1529fc value=0x6b1821 (heap+5557793)
+[   15.0810] falseroot[globals]: addr=0x152a0c value=0x1831821 (heap+23907873)
+[   15.0810] falseroot[globals]: addr=0x152a10 value=0x18e7021 (heap+24651297)
+[   15.0811] falseroot[globals]: addr=0x152a58 value=0x18d1821 (heap+24563233)
+[   15.0811] falseroot[globals]: addr=0x152bc0 value=0x1435021 (heap+19727905)
+[   15.0811] falseroot[globals]: addr=0x152bcc value=0x6a5021 (heap+5506593)
+[   15.0818] falseroot[stack]: addr=0x1ffe8c0 value=0x166380 (heap+6528)
+[   15.0818] falseroot[stack]: addr=0x1ffe8c4 value=0x166388 (heap+6536)
+[   15.0818] falseroot[stack]: addr=0x1ffe8d4 value=0x166380 (heap+6528)
+[   15.0818] falseroot[stack]: addr=0x1ffe8f4 value=0x166380 (heap+6528)
+[   15.0819] falseroot[stack]: addr=0x1ffe934 value=0x166380 (heap+6528)
+[   15.0819] falseroot[stack]: addr=0x1ffe968 value=0x166380 (heap+6528)
+[   15.0819] falseroot[stack]: addr=0x1ffe9b0 value=0x1661f0 (heap+6128)
+[   15.0819] falseroot[stack]: addr=0x1ffe9f4 value=0x1000001 (heap+15316481)
+[   15.0819] falseroot[stack]: addr=0x1ffea28 value=0x1010101 (heap+15382273)
+[   15.0820] falseroot[stack]: addr=0x1ffea2c value=0x1010101 (heap+15382273)
+[   15.0820] falseroot[stack]: addr=0x1ffea34 value=0x1000001 (heap+15316481)
+[   15.0820] falseroot[stack]: addr=0x1ffea44 value=0x1000001 (heap+15316481)
+[   15.0820] falseroot[stack]: addr=0x1ffeac0 value=0x1800011 (heap+23705105)
+[   15.0820] falseroot[stack]: addr=0x1ffeaec value=0x166450 (heap+6736)
+[   15.0821] falseroot[stack]: addr=0x1ffeb2c value=0x166340 (heap+6464)
+[   15.0821] falseroot[stack]: addr=0x1ffef20 value=0x1661f0 (heap+6128)
+[   15.0821] falseroots: globals 0x151280-0x164820: 240 heap-range words of 19816; stack 0x1ffe880-0x2000000: 16 heap-range words of 1504
+[   15.0822] PS2GO-CASE false-roots-2 PASS
+[   15.1430] PS2GO-CASE gc-cost RUN
+[   17.1160] gccost: empty heap (inuse=13679792): min 320.78993ms avg 320.915625ms
+[   18.8326] gccost: 1 MB live (1 x 1MB []byte): min 314.9375ms avg 315.277777ms
+[   19.2136] gccost: after 1MB release: inuse=14728560 idle=10050096 objects=48 numgc=37 mallocs=16559 frees=16511 totalalloc=65128541
+[   20.6998] gccost: 14831 KB live (16384 x 64B []byte, 16435 objects): min 348.78125ms avg 349.603588ms
+[   23.7145] gccost: 16159 KB live (20000 linked objs, 56432 objects): min 423.440972ms avg 423.938194ms
+[   24.1588] gccost: after linked release: inuse=14960064 idle=9818592 objects=40050 numgc=49 mallocs=72967 frees=32917 totalalloc=67254195
+[   25.2805] fatal error: out of memory
+[   25.2805] runtime: abort
+[   25.3375] PINE: Client disconnected.
+[   25.3467] (VMManager) Pausing...
+[   25.3491] Add 25 seconds play time to gcexp -> now 138
+[   25.4769] DEV9: DEV9close
+[   25.4819] Skipping updating pipeline cache '/home/ricardo/dev/ps2go/tools/pcsx2-gc2/data/PCSX2/cache/vulkan_pipelines.bin' due to no changes.
+[   25.4853] DEV9: DEV9shutdown
+[   25.4854] NVRAM has not changed, not writing to disk.
+[   25.4974] Releasing host memory for virtual systems...
