@@ -20,8 +20,9 @@ package harness
 
 // The block shared with the host, as a C global so the optimizer keeps it
 // intact and the symbol name is plain. The host reads it through PINE after
-// looking "ps2go_harness_block" up in the ELF symbol table.
-volatile unsigned int ps2go_harness_block[16] __attribute__((aligned(16)));
+// looking "ps2go_harness_block" up in the ELF symbol table. It lives outside
+// the globals range the GC scans: its counters would look like heap pointers.
+volatile unsigned int ps2go_harness_block[16] __attribute__((aligned(16), section(".ps2go.noscan")));
 
 static void ps2go_block_set(int i, unsigned int v) { ps2go_harness_block[i] = v; }
 static unsigned int ps2go_block_get(int i) { return ps2go_harness_block[i]; }

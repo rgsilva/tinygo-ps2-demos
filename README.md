@@ -57,7 +57,15 @@ Then:
   (heap in use, allocations, current case) over PCSX2's PINE socket while it runs.
 
 The guest side is the `harness` package: call `harness.Run` with your cases, and use
-`harness.Log` (or plain `println`) for output. Goroutine and recover cases are behind
-the `ps2go_sched` and `ps2go_recover` build tags until the runtime supports them.
+`harness.Log` (or plain `println`) for output. Goroutines, channels, timers and recover
+are all covered by the suite.
+
+## Memory notes
+
+The GC is conservative. It scans the Go program's own globals (the generated linker script
+gathers them into one section) and the stacks; pointer-free globals are moved out of the
+scan by TinyGo. Large buffers that never hold Go pointers can be put in the `.ps2go.noscan`
+section from C. Objects referenced only from C memory (the ps2sdk heap, DMA buffers) are not
+kept alive: keep a Go reference too.
 
 Have fun!

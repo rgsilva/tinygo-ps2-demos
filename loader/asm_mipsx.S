@@ -140,3 +140,11 @@ tinygo_swapTask:
     // Return into the task (tinygo_startTask on the first switch).
     jr    $ra
     nop
+
+.section .text.tinygo_getsp
+.global  tinygo_getsp
+.type    tinygo_getsp, %function
+tinygo_getsp:
+    // Return the caller's stack pointer (used by the GC stack scrub).
+    jr    $ra
+    move  $v0, $sp

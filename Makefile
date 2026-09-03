@@ -63,6 +63,7 @@ PS2SDK_IMG = $(PS2DEV_IMG)/ps2sdk
 DOCKER = docker run --rm $(if $(MAKE_TERMOUT),-t) --user=$(shell id -u):$(shell id -g) \
          -v $(CURDIR):/src -w /src $(IMAGE)
 EE_CC  = mips64r5900el-ps2-elf-gcc
+EE_OBJCOPY = mips64r5900el-ps2-elf-objcopy
 
 # Headers for cgo (host side). gcc's own headers (stddef.h, ...) live in a
 # versioned directory, so detect the version.
@@ -87,18 +88,20 @@ EE_CFLAGS = -D_EE -G0 -O2 -Wall -gdwarf-2 -gz -mxgot \
             -I$(PS2SDK_IMG)/ee/include -I$(PS2SDK_IMG)/common/include \
             -I$(PS2DEV_IMG)/gsKit/include
 
-# Link. The ps2sdk linker script is used as is; TinyGo's runtime needs a few
-# extra symbols: heap bounds (replaced at runtime by a libc allocation), the
-# globals range the GC scans (.data through .bss), and the stack top. crt0
-# asks the kernel for a stack of _stack_size bytes at the top of RAM, so the
-# stack occupies [0x02000000-_stack_size, 0x02000000).
-EE_LINKFILE = $(PS2SDK_IMG)/ee/startup/linkfile
-EE_LDFLAGS  = -T$(EE_LINKFILE) \
-              -Wl,--defsym=_heap_start=_end \
+# Link. The linker script is the ps2sdk one with one section added in front
+# of .data: the Go program's own .data and .bss, bracketed by
+# _globals_start/_globals_end, which is the range the GC scans for roots.
+# Scanning the whole SDK .data..bss instead pinned megabytes of heap: the
+# kernel patch blobs in libkernel are full of words that look like pointers.
+# Data that must not be scanned (big buffers, counters) can be placed in the
+# .ps2go.noscan section. The script is generated per program (build/%.ld).
+# TinyGo's runtime also needs the heap bounds (replaced at runtime by a libc
+# allocation) and the stack top: crt0 asks the kernel for a stack of
+# _stack_size bytes at the top of RAM, [0x02000000-_stack_size, 0x02000000).
+SDK_LINKFILE = $(PS2DEV)/ps2sdk/ee/startup/linkfile
+EE_LDFLAGS  = -Wl,--defsym=_heap_start=_end \
               -Wl,--defsym=_heap_end=0x02000000 \
               -Wl,--defsym=_stack_top=0x02000000 \
-              -Wl,--defsym=_globals_start=_fdata \
-              -Wl,--defsym=_globals_end=_end \
               -Wl,-zmax-page-size=128 -mhard-float -msingle-float
 EE_LIBS     = -L$(PS2SDK_IMG)/ee/lib -L$(PS2SDK_IMG)/ports/lib -L$(PS2DEV_IMG)/gsKit/lib \
               -lpatches -lfileXio -lpad -ldebug -lgskit_toolkit -lgskit -ldmakit -lpng -ljpeg -lz
@@ -120,10 +123,30 @@ $(BUILD):
 
 # Link order: IOP modules, runtime glue, the program, the loader, resources.
 objs = $(addprefix $(BUILD)/,$(addsuffix .o,$(1)))
-$(BUILD)/%.elf: $$(call objs,$$(filter $(IRX),$$($$*_OBJS))) $(BUILD)/asm_mipsx.o $(BUILD)/%.o $(BUILD)/loader.o $$(call objs,$$(filter-out $(IRX),$$($$*_OBJS))) $(MAKEFILES_)
+$(BUILD)/%.elf: $$(call objs,$$(filter $(IRX),$$($$*_OBJS))) $(BUILD)/asm_mipsx.o $(BUILD)/%.o $(BUILD)/loader.o $$(call objs,$$(filter-out $(IRX),$$($$*_OBJS))) $(BUILD)/%.ld $(MAKEFILES_)
 	@echo "  LINK    $@"
 	$(Q)mkdir -p $(@D)
-	$(Q)$(DOCKER) $(EE_CC) $(EE_LDFLAGS) $($*_LDFLAGS) -o $@ $(filter %.o,$^) $(EE_LIBS)
+	$(Q)$(DOCKER) sh -c '$(EE_OBJCOPY) --set-section-flags .bss=alloc,load,contents,data $(BUILD)/$*.o && \
+	  $(EE_CC) -T$(BUILD)/$*.ld $(EE_LDFLAGS) $($*_LDFLAGS) -o $@ $(filter %.o,$^) $(EE_LIBS)'
+
+# Linker script for one program: the SDK script plus the Go globals section.
+$(BUILD)/%.ld: $(SDK_LINKFILE) $(MAKEFILES_)
+	@echo "  LDSCRIPT $@"
+	$(Q)mkdir -p $(@D)
+	$(Q)awk -v go='$(BUILD)/$*.o' '\
+	  /^\t\.data ALIGN\(128\): \{/ { \
+	    print "\t/* Go globals: the range the GC scans for roots (ps2go). The"; \
+	    print "\t   program has a single load segment, so the Go .bss is turned"; \
+	    print "\t   into file-backed zeros (objcopy, see the link rule). */"; \
+	    print "\t.go.data ALIGN(16): {"; \
+	    print "\t\t_globals_start = . ;"; \
+	    print "\t\t" go "(.data .data.* .bss .bss.* COMMON)"; \
+	    print "\t\t. = ALIGN(16);"; \
+	    print "\t\t_globals_end = . ;"; \
+	    print "\t}"; \
+	    print; print "\t\t*(.ps2go.noscan)"; next } \
+	  { print }' $< > $@
+	$(Q)grep -q '_globals_end' $@ || { echo "failed to patch $(SDK_LINKFILE)"; rm -f $@; exit 1; }
 
 # Go -> LLVM IR. Demos import the shared packages, so depend on all Go sources.
 GO_SOURCES := $(shell find . -name '*.go' -not -path './$(BUILD)/*')

@@ -20,6 +20,11 @@ func main() {
 		{Name: "cgo-abi", Fn: testCgoABI},
 		{Name: "gc-stress", Fn: testGCStress},
 		{Name: "memstats", Fn: testMemStats},
+		{Name: "gc-roots", Fn: testGCRoots},
+		{Name: "gc-reclaim", Fn: testGCReclaim},
+		{Name: "gc-large", Fn: testGCLarge},
+		{Name: "gc-natural", Fn: testGCNatural},
+		{Name: "gc-finalizer", Fn: testGCFinalizer},
 	}
 	cases = append(cases,
 		harness.Case{Name: "timer", Fn: testTimer},
