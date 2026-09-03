@@ -27,6 +27,7 @@ BLOCK_FIELDS = ["magic", "version", "state", "cases", "passed", "failed", "curre
 # Log lines that mean the guest died. Refined against controls/crash.
 CRASH_PATTERNS = [
     re.compile(r"TLB Miss", re.I),
+    re.compile(r"^(panic: |fatal error: |runtime: abort)"),
     re.compile(r"\bException\b.*(Address|Bus|Reserved|Trap|Overflow)", re.I),
     re.compile(r"Unhandled (EE|IOP) exception", re.I),
     re.compile(r"\bEE\b.*\b(Address Error|Bus Error|Reserved Instruction)\b", re.I),

@@ -50,7 +50,8 @@ Then:
   on the EE serial port, which ends up in PCSX2's log, and the run ends with `PS2GO-RESULT`.
   Cases known to fail on the current runtime are marked `XFail` and reported as `XFAIL`.
 * `make check-harness` proves the harness itself with the negative controls in `controls/`
-  (a failing case, a hang, an unmapped memory access) which must produce FAIL, TIMEOUT and CRASH.
+  (a failing case, a hang, an unmapped memory access, an unrecovered panic) which must produce FAIL,
+  TIMEOUT, CRASH and CRASH.
 * `make run-<demo>` runs any ELF for `TIMEOUT` seconds and streams its serial output.
 * `harness/ps2test.py --probe 2 build/tests.elf` also reads the guest's stats block
   (heap in use, allocations, current case) over PCSX2's PINE socket while it runs.
