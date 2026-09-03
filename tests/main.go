@@ -18,6 +18,7 @@ func main() {
 		{Name: "float64-arith", Fn: testFloat64Arith},
 		{Name: "atomics", Fn: testAtomics},
 		{Name: "cgo-abi", Fn: testCgoABI},
+		{Name: "embed", Fn: testEmbed},
 		{Name: "gc-stress", Fn: testGCStress},
 		{Name: "memstats", Fn: testMemStats},
 		{Name: "gc-roots", Fn: testGCRoots},
