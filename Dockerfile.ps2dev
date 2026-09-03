@@ -1,6 +1,0 @@
-FROM ps2dev/ps2dev
-
-RUN apk add --no-cache bash build-base cmake git texinfo flex bison gettext gmp-dev mpfr-dev mpc1-dev zlib-dev make coreutils wget unzip
-
-#FROM h4570/tyra
-

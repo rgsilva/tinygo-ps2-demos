@@ -14,12 +14,8 @@ Currently this requires a custom version of the TinyGo compiler. The custom vers
 custom version of the LLVM to work.
 
 The Go code is compiled to LLVM IR by TinyGo and turned into MIPS objects by clang, both on the host.
-The final link against the ps2sdk happens in Docker, using the amd64 binaries of ps2dev/ps2sdk (I'm on an
-Apple silicon Mac). So you'll need Docker. First build the image:
-
-```sh
-make ps2dev
-```
+The final link against the ps2sdk happens in Docker, using the amd64 `ps2dev/ps2dev` image (I'm on an
+Apple silicon Mac). So you'll need Docker; the image is pulled automatically on the first build.
 
 Then tell the Makefile where your tools are, either in a `config.mk` file next to it (gitignored):
 

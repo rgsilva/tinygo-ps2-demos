@@ -2,13 +2,13 @@
 #
 # Go code is compiled to LLVM IR by a custom TinyGo on the host, turned into a
 # MIPS N32 object by the matching clang, and linked against the ps2sdk inside
-# the rgsilva/ps2dev Docker image.
+# the ps2dev/ps2dev Docker image (pulled automatically on first use).
 #
 # Local settings go in config.mk (gitignored) or on the command line:
 #   PS2DEV  host copy of the ps2dev tree (headers only, for cgo)
 #   TINYGO  custom tinygo binary
 #   CLANG   clang from the custom LLVM build
-#   IMAGE   docker image with the ps2sdk toolchain
+#   IMAGE   docker image with the ps2sdk toolchain (pinned tag; keep PS2DEV in sync)
 # Use V=1 for verbose output.
 
 -include config.mk
@@ -16,7 +16,7 @@
 PS2DEV ?= /usr/local/ps2dev
 TINYGO ?= tinygo
 CLANG  ?= clang
-IMAGE  ?= rgsilva/ps2dev
+IMAGE  ?= ps2dev/ps2dev:v2.0.0
 V      ?= 0
 
 # ---------------------------------------------------------------------------
@@ -94,7 +94,7 @@ EE_LIBS     = -L$(PS2SDK_IMG)/ee/lib -L$(PS2SDK_IMG)/ports/lib -L$(PS2DEV_IMG)/g
 # Rules
 # ---------------------------------------------------------------------------
 
-.PHONY: all $(DEMOS) ps2dev shell clean
+.PHONY: all $(DEMOS) shell clean
 .SECONDEXPANSION:
 .DELETE_ON_ERROR:
 
@@ -144,9 +144,6 @@ $(patsubst %,$(BUILD)/%.o,$(IRX)): $(BUILD)/%.o: | $(BUILD)
 
 # Keep intermediate files (.ll, .o) instead of deleting them after the link.
 .SECONDARY:
-
-ps2dev:
-	docker build -f Dockerfile.ps2dev -t $(IMAGE) .
 
 shell:
 	docker run --rm -it --user=$(shell id -u):$(shell id -g) -v $(CURDIR):/src -w /src $(IMAGE)
