@@ -66,7 +66,12 @@ PS2SDK_IMG = $(PS2DEV_IMG)/ps2sdk
 DOCKER = docker run --rm $(if $(MAKE_TERMOUT),-t) --user=$(shell id -u):$(shell id -g) \
          -v $(CURDIR):/src -w /src $(IMAGE)
 
-TINYGO_FLAGS = -gc conservative -target ps2 $(if $(filter 1,$(V)),-x)
+# Precise GC (pointer-free objects are not scanned: faster collections with
+# buffers and tables, slower with many small pointer-heavy objects) and speed
+# over size. Measured on the suite, 2026-09-04: idle collection 7.7 ms vs
+# 14.4 ms, 10k interior pointers 10 ms vs 40 ms, suite 6.4 s vs 7.9 s, code
+# +15%.
+TINYGO_FLAGS = -gc precise -opt 2 -target ps2 $(if $(filter 1,$(V)),-x)
 # What tinygo needs from the environment: the SDK root for targets/ps2.json
 # and the gcc (wrapper) on PATH.
 TINYGO_ENV = PS2DEV=$(PS2DEV) PS2DEV_IMAGE=$(IMAGE) PATH=$(CURDIR)/tools:$$PATH \
