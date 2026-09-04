@@ -20,6 +20,7 @@ func main() {
 		{Name: "float-int-conv", Fn: testFloatIntConv},
 		{Name: "atomics", Fn: testAtomics},
 		{Name: "cgo-abi", Fn: testCgoABI},
+		{Name: "cgo-cfile", Fn: testCFile},
 		{Name: "embed", Fn: testEmbed},
 		{Name: "irx-load", Fn: testIRX},
 		{Name: "memory-layout", Fn: testMemoryLayout},
