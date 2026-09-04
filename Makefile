@@ -75,6 +75,7 @@ TINYGO_FLAGS = -gc precise -opt 2 -target ps2 $(if $(filter 1,$(V)),-x)
 # What tinygo needs from the environment: the SDK root for targets/ps2.json
 # and the gcc (wrapper) on PATH.
 TINYGO_ENV = PS2DEV=$(PS2DEV) PS2DEV_IMAGE=$(IMAGE) PATH=$(CURDIR)/tools:$$PATH \
+             TINYGOROOT=$$($(TINYGO) env TINYGOROOT) \
              PS2GO_HARNESS=$(CURDIR)/harness PS2GO_PCSX2_DIR=$(PCSX2_DIR)
 
 # ---------------------------------------------------------------------------

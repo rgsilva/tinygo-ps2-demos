@@ -32,3 +32,4 @@ build/
 config.mk
 # IOP modules copied from the ps2sdk for the resources package
 resources/*.irx
+__pycache__/
