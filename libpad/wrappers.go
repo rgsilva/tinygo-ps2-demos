@@ -5,6 +5,8 @@ package libpad
 
 #define _EE
 #include <stdlib.h>
+#include <malloc.h>
+#include <string.h>
 #include <tamtypes.h>
 #include <kernel.h>
 
@@ -14,6 +16,8 @@ struct padButtonStatus status;
 */
 import "C"
 import (
+	"fmt"
+	"time"
 	"unsafe"
 )
 
@@ -37,10 +41,20 @@ func Init() {
 }
 
 func PortOpen(port int, slot int) Pad {
-	bufPtr := unsafe.Pointer(C.calloc(1, 256))
+	// libpad requires the pad buffer to be 64-byte aligned (it is written by
+	// the IOP through DMA); with a misaligned buffer padPortOpen fails and
+	// the pad never becomes stable.
+	bufPtr := unsafe.Pointer(C.memalign(64, 256))
+	C.memset(bufPtr, 0, 256)
 
-	C.padPortOpen(C.int(port), C.int(slot), bufPtr)
+	if C.padPortOpen(C.int(port), C.int(slot), bufPtr) == 0 {
+		panic(fmt.Sprintf("libpad: padPortOpen(%d, %d) failed", port, slot))
+	}
+	deadline := time.Now().Add(5 * time.Second)
 	for int(C.padGetState(C.int(port), C.int(slot))) != PAD_STATE_STABLE {
+		if time.Now().After(deadline) {
+			panic(fmt.Sprintf("libpad: pad %d/%d did not become stable (state %d)", port, slot, int(C.padGetState(C.int(port), C.int(slot)))))
+		}
 	}
 
 	return Pad{

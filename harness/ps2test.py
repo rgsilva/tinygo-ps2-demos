@@ -143,6 +143,8 @@ def main():
     ap.add_argument("--timeout", type=float, default=60, help="seconds before TIMEOUT (default 60)")
     ap.add_argument("--expect", choices=list(EXIT_CODES), help="exit 0 only if the verdict equals this")
     ap.add_argument("--detail", help="with --expect: the verdict's detail must also contain this text")
+    ap.add_argument("--until", metavar="TEXT",
+                    help="stream the guest output and PASS as soon as a line contains TEXT (a boot smoke test)")
     ap.add_argument("--run", action="store_true", help="just run for --timeout seconds and stream the guest output")
     ap.add_argument("--test", action="store_true",
                     help="run a Go test binary: stream its output, verdict from its exit code (PS2GO-EXIT); "
@@ -219,7 +221,7 @@ def main():
                             print(text, flush=True)
                         elif "is executing" in text:
                             started = True
-                    elif text.startswith("PS2GO-") or args.run:
+                    elif text.startswith("PS2GO-") or args.run or args.until:
                         say(f"  {text}")
                     # A crash is sticky: PCSX2 logs the faulting access and
                     # carries on, so a later result marker must not hide it.
@@ -228,6 +230,8 @@ def main():
                     if text.startswith("PS2GO-RESULT"):
                         verdict = "PASS" if text.split()[1] == "PASS" else "FAIL"
                         detail = " ".join(text.split()[2:])
+                    elif args.until and args.until in text:
+                        verdict, detail = "PASS", f"reached {args.until!r}"
                     elif text.startswith("PS2GO-EXIT") and (args.test or text.split()[1] != "0"):
                         code = text.split()[1]
                         verdict = "PASS" if code == "0" else "FAIL"

@@ -114,7 +114,7 @@ check: $(BUILD)/tests.elf
 	$(PS2TEST) $<
 
 # Prove the harness itself: each control must produce its verdict.
-check-harness: $(patsubst %,$(BUILD)/%.elf,$(CONTROLS)) $(BUILD)/tests.elf
+check-harness: $(patsubst %,$(BUILD)/%.elf,$(CONTROLS)) $(BUILD)/tests.elf $(BUILD)/flappygopher.elf
 	$(PS2TEST) --expect FAIL    $(BUILD)/controls/fail.elf
 	$(PS2TEST) --expect TIMEOUT --timeout 20 $(BUILD)/controls/hang.elf
 	$(PS2TEST) --expect CRASH   $(BUILD)/controls/crash.elf
@@ -123,6 +123,7 @@ check-harness: $(patsubst %,$(BUILD)/%.elf,$(CONTROLS)) $(BUILD)/tests.elf
 	$(PS2TEST) --expect CRASH   $(BUILD)/controls/gopanic.elf
 	$(PS2TEST) --expect CRASH --detail 'goroutine stack overflow' $(BUILD)/controls/stackoverflow.elf
 	$(PS2TEST) --expect PASS    $(BUILD)/tests.elf
+	$(PS2TEST) --until 'Game start' --timeout 30 $(BUILD)/flappygopher.elf
 
 # Go's own testing package on the PS2: `tinygo test` builds the test binary
 # and runs it in PCSX2 through the harness (the target's emulator). The

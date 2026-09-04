@@ -55,7 +55,8 @@ Then:
   case, a hang, a crash, panics, a deadlock, a goroutine stack overflow)
   (a failing case, a hang, an unmapped memory access, an unrecovered panic) which must produce FAIL,
   TIMEOUT, CRASH and CRASH.
-* `make run-<demo>` runs any ELF for `TIMEOUT` seconds and streams its serial output.
+* `make run-<demo>` runs any ELF for `TIMEOUT` seconds and streams its serial output. `check-harness`
+  also boots Flappy Gopher until it prints `Game start` (`--until`), so a hang during init is caught.
 * `make check-gotest` runs Go's own `testing` package on the PS2: `tinygo test -target ps2 ./gotest`
   builds the test binary and runs it in PCSX2 through the harness, which is the target's emulator
   (`PS2GO_HARNESS` points at `harness/`). A test failure makes `tinygo test` fail.

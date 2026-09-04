@@ -6,6 +6,7 @@ package debug
 #include <stdio.h>
 #include <debug.h>
 #include <sifrpc.h>
+#include <sio.h>
 */
 import "C"
 import (
@@ -28,6 +29,7 @@ func Printf(format string, args ...interface{}) {
 
 	str := C.CString(formatted)
 	C.scr_printf(str)
+	C.sio_putsn(str) // the same text on the serial port (emulator log, harness)
 	C.free(unsafe.Pointer(str))
 }
 
