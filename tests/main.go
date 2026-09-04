@@ -32,6 +32,7 @@ func main() {
 		{Name: "gc-natural", Fn: testGCNatural},
 		{Name: "gc-finalizer", Fn: testGCFinalizer},
 		{Name: "gc-sweep-time", Fn: testGCSweepTime},
+		{Name: "gc-interior-pointers", Fn: testGCInteriorPointers},
 	}
 	cases = append(cases,
 		harness.Case{Name: "timer", Fn: testTimer},
