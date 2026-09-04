@@ -44,7 +44,8 @@ LIBC_HEAP ?= 4*1024*1024
 # The test suite (tests/) and the harness's negative controls (controls/*)
 # are built like demos; `make check` runs them in PCSX2 (harness/ps2test.py).
 TESTS = tests
-CONTROLS = controls/fail controls/hang controls/crash controls/panic controls/deadlock controls/gopanic
+CONTROLS = controls/fail controls/hang controls/crash controls/panic controls/deadlock controls/gopanic \
+           controls/stackoverflow
 
 # IOP modules embedded by the resources package, taken from the ps2sdk.
 IRX = freesio2 freepad
@@ -120,6 +121,7 @@ check-harness: $(patsubst %,$(BUILD)/%.elf,$(CONTROLS)) $(BUILD)/tests.elf
 	$(PS2TEST) --expect CRASH   $(BUILD)/controls/panic.elf
 	$(PS2TEST) --expect CRASH   $(BUILD)/controls/deadlock.elf
 	$(PS2TEST) --expect CRASH   $(BUILD)/controls/gopanic.elf
+	$(PS2TEST) --expect CRASH --detail 'goroutine stack overflow' $(BUILD)/controls/stackoverflow.elf
 	$(PS2TEST) --expect PASS    $(BUILD)/tests.elf
 
 # Go's own testing package on the PS2: `tinygo test` builds the test binary

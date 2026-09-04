@@ -142,6 +142,7 @@ def main():
     ap.add_argument("elf")
     ap.add_argument("--timeout", type=float, default=60, help="seconds before TIMEOUT (default 60)")
     ap.add_argument("--expect", choices=list(EXIT_CODES), help="exit 0 only if the verdict equals this")
+    ap.add_argument("--detail", help="with --expect: the verdict's detail must also contain this text")
     ap.add_argument("--run", action="store_true", help="just run for --timeout seconds and stream the guest output")
     ap.add_argument("--test", action="store_true",
                     help="run a Go test binary: stream its output, verdict from its exit code (PS2GO-EXIT); "
@@ -169,7 +170,8 @@ def main():
             line += f": {detail}"
         print(line, flush=True)
         if args.expect:
-            return 0 if verdict == args.expect else 5
+            ok = verdict == args.expect and (not args.detail or args.detail in (detail or ""))
+            return 0 if ok else 5
         return EXIT_CODES[verdict]
 
     for path, what in ((elf, "ELF"), (binary, "PCSX2 binary"), (os.path.join(datadir, "PCSX2", "inis", "PCSX2.ini"), "PCSX2 ini")):

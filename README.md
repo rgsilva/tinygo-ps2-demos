@@ -51,7 +51,8 @@ Then:
 * `make check` builds `tests/` and runs it: each case prints `PS2GO-CASE <name> PASS|FAIL`
   on the EE serial port, which ends up in PCSX2's log, and the run ends with `PS2GO-RESULT`.
   Cases known to fail on the current runtime are marked `XFail` and reported as `XFAIL`.
-* `make check-harness` proves the harness itself with the negative controls in `controls/`
+* `make check-harness` proves the harness itself with the negative controls in `controls/` (a failing
+  case, a hang, a crash, panics, a deadlock, a goroutine stack overflow)
   (a failing case, a hang, an unmapped memory access, an unrecovered panic) which must produce FAIL,
   TIMEOUT, CRASH and CRASH.
 * `make run-<demo>` runs any ELF for `TIMEOUT` seconds and streams its serial output.

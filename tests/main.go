@@ -23,6 +23,7 @@ func main() {
 		{Name: "cgo-cfile", Fn: testCFile},
 		{Name: "embed", Fn: testEmbed},
 		{Name: "irx-load", Fn: testIRX},
+		{Name: "rtc", Fn: testRTC},
 		{Name: "memory-layout", Fn: testMemoryLayout},
 		{Name: "libc-heap-cap", Fn: testLibcHeapCap},
 		{Name: "gskit-alloc", Fn: testGsKitAlloc},
