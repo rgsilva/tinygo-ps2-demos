@@ -1,6 +1,7 @@
 package dmakit
 
 /*
+#cgo LDFLAGS: -ldmakit
 #define _EE
 #include <dmaKit.h>
 */

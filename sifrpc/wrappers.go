@@ -1,6 +1,7 @@
 package sifrpc
 
 /*
+#cgo LDFLAGS: -lpatches
 #define _EE
 #include <stdlib.h>
 #include <kernel.h>

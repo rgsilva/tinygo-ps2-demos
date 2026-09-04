@@ -1,0 +1,8 @@
+#!/bin/sh
+# The ps2sdk gcc from the ps2dev Docker image, as the linker for TinyGo's
+# ps2 target (targets/ps2.json names this command). The home and temp
+# directories are mounted at the same paths, so TinyGo's object files, the
+# linker script and the SDK copy under $PS2DEV are where the linker expects
+# them. With a native ps2dev toolchain on PATH this wrapper is not needed.
+exec docker run --rm --user="$(id -u):$(id -g)" -v /tmp:/tmp -v "$HOME:$HOME" -w "$PWD" \
+	"${PS2DEV_IMAGE:-ps2dev/ps2dev:v2.0.0}" mips64r5900el-ps2-elf-gcc "$@"

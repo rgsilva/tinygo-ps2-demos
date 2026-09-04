@@ -1,6 +1,7 @@
 package libpad
 
 /*
+#cgo LDFLAGS: -lpad
 
 #define _EE
 #include <stdlib.h>

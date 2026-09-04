@@ -143,6 +143,10 @@ def main():
     ap.add_argument("--timeout", type=float, default=60, help="seconds before TIMEOUT (default 60)")
     ap.add_argument("--expect", choices=list(EXIT_CODES), help="exit 0 only if the verdict equals this")
     ap.add_argument("--run", action="store_true", help="just run for --timeout seconds and stream the guest output")
+    ap.add_argument("--test", action="store_true",
+                    help="run a Go test binary: stream its output, verdict from its exit code (PS2GO-EXIT); "
+                         "used as the emulator of TinyGo's ps2 target")
+    ap.add_argument("ignored", nargs=argparse.REMAINDER, help="extra arguments (test flags) are ignored")
     ap.add_argument("--pcsx2-dir", default=os.environ.get("PS2GO_PCSX2_DIR", DEFAULT_DIR))
     ap.add_argument("--log", help="keep the PCSX2 log at this path")
     ap.add_argument("--probe", type=float, default=0, metavar="SECS", help="print the guest stats block every SECS")
@@ -197,6 +201,7 @@ def main():
     next_probe = t0 + args.probe if args.probe else None
     pos = 0
     block = None
+    started = False  # --test: echo only what the program prints
     try:
         while True:
             now = time.time()
@@ -207,7 +212,12 @@ def main():
                     pos = f.tell()
                 for line in chunk.splitlines():
                     text = re.sub(r"^\[\s*[\d.]+\]\s*", "", line)
-                    if text.startswith("PS2GO-") or args.run:
+                    if args.test:
+                        if started and not text.startswith("PS2GO-EXIT"):
+                            print(text, flush=True)
+                        elif "is executing" in text:
+                            started = True
+                    elif text.startswith("PS2GO-") or args.run:
                         say(f"  {text}")
                     # A crash is sticky: PCSX2 logs the faulting access and
                     # carries on, so a later result marker must not hide it.
@@ -216,6 +226,10 @@ def main():
                     if text.startswith("PS2GO-RESULT"):
                         verdict = "PASS" if text.split()[1] == "PASS" else "FAIL"
                         detail = " ".join(text.split()[2:])
+                    elif text.startswith("PS2GO-EXIT") and (args.test or text.split()[1] != "0"):
+                        code = text.split()[1]
+                        verdict = "PASS" if code == "0" else "FAIL"
+                        detail = f"exit code {code}"
                     elif text.startswith("Startup Error") or "PCSX2 requires a PlayStation 2 BIOS" in text:
                         verdict, detail = "ERROR", text
                     elif any(p.search(text) for p in CRASH_PATTERNS):

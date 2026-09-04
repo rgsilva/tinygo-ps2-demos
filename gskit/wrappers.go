@@ -1,6 +1,7 @@
 package gskit
 
 /*
+#cgo LDFLAGS: -lgskit_toolkit -lgskit -ldmakit -lpng -ljpeg -lz
 #include <stdlib.h>
 #define _EE
 #include <gsKit.h>

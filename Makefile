@@ -1,13 +1,14 @@
 # TinyGo PlayStation 2 demos.
 #
-# Go code is compiled to LLVM IR by a custom TinyGo on the host, turned into a
-# MIPS N32 object by the matching clang, and linked against the ps2sdk inside
-# the ps2dev/ps2dev Docker image (pulled automatically on first use).
+# `tinygo build -target ps2` does it all: the custom TinyGo compiles the Go
+# code to a MIPS N32 object and links it with the ps2sdk gcc (targets/ps2.json
+# in the fork names the linker, the SDK paths through $PS2DEV, and the linker
+# script targets/ps2.ld). The gcc runs in the ps2dev/ps2dev Docker image
+# through tools/mips64r5900el-ps2-elf-gcc unless a native toolchain is on PATH.
 #
 # Local settings go in config.mk (gitignored) or on the command line:
-#   PS2DEV  host copy of the ps2dev tree (headers only, for cgo)
+#   PS2DEV  ps2dev tree: headers and libraries (a copy extracted from the image)
 #   TINYGO  custom tinygo binary
-#   CLANG   clang from the custom LLVM build
 #   IMAGE   docker image with the ps2sdk toolchain (pinned tag; keep PS2DEV in sync)
 #   PCSX2_DIR  PCSX2 install for `make check` (see harness/setup-pcsx2.sh)
 # Use V=1 for verbose output.
@@ -16,7 +17,6 @@
 
 PS2DEV ?= /usr/local/ps2dev
 TINYGO ?= tinygo
-CLANG  ?= clang
 IMAGE  ?= ps2dev/ps2dev:v2.0.0
 PCSX2_DIR ?= $(HOME)/dev/ps2go/tools/pcsx2
 PYTHON ?= python3
@@ -30,9 +30,8 @@ V      ?= 0
 
 DEMOS = flappygopher
 
-# Per-program knobs: <name>_TINYGO_FLAGS and <name>_LDFLAGS. Note that the
-# ps2sdk archives carry LTO bytecode, so an -O level given at link time decides
-# how the SDK code (crt0, libc, libdebug, ...) is compiled into that ELF.
+# Per-program knobs: <name>_TINYGO_FLAGS and <name>_LIBC_HEAP. Libraries are
+# declared by the packages that use them (#cgo LDFLAGS lines).
 flappygopher_TINYGO_FLAGS =
 
 # EE memory map, decided here at link time (32 MB of RAM, the first 1 MB is
@@ -60,63 +59,24 @@ Q = $(if $(filter 1,$(V)),,@)
 # Flags live here, so rebuild when the Makefile (or config.mk) changes.
 MAKEFILES_ = Makefile $(wildcard config.mk)
 
-# Paths inside the image.
+# Paths inside the image (IOP modules are copied from there).
 PS2DEV_IMG = /usr/local/ps2dev
 PS2SDK_IMG = $(PS2DEV_IMG)/ps2sdk
 
 DOCKER = docker run --rm $(if $(MAKE_TERMOUT),-t) --user=$(shell id -u):$(shell id -g) \
          -v $(CURDIR):/src -w /src $(IMAGE)
-EE_CC  = mips64r5900el-ps2-elf-gcc
-EE_OBJCOPY = mips64r5900el-ps2-elf-objcopy
-
-# Headers for cgo (host side). gcc's own headers (stddef.h, ...) live in a
-# versioned directory, so detect the version.
-EE_GCC_VER = $(notdir $(wildcard $(PS2DEV)/ee/lib/gcc/mips64r5900el-ps2-elf/*))
-CGO_CFLAGS = \
-	-I$(PS2DEV)/ee/lib/gcc/mips64r5900el-ps2-elf/$(EE_GCC_VER)/include \
-	-I$(PS2DEV)/ee/mips64r5900el-ps2-elf/include \
-	-I$(PS2DEV)/gsKit/include \
-	-I$(PS2DEV)/ps2sdk/common/include \
-	-I$(PS2DEV)/ps2sdk/ee/include \
-	-I$(PS2DEV)/ps2sdk/ports/include/freetype2 \
-	-I$(PS2DEV)/ps2sdk/ports/include/zlib
 
 TINYGO_FLAGS = -gc conservative -target ps2 $(if $(filter 1,$(V)),-x)
-
-# The runtime's assembly (stack scanning, longjmp, task switching) comes from
-# the TinyGo tree: tinygo build only emits LLVM IR for us, so it is assembled
-# here. Same files as extra-files in TinyGo's targets/ps2.json.
-TINYGOROOT  ?= $(shell $(TINYGO) env TINYGOROOT)
-RUNTIME_ASM  = $(TINYGOROOT)/src/runtime/asm_ps2.S $(TINYGOROOT)/src/internal/task/task_stack_ps2.S
-RUNTIME_OBJS = $(patsubst %.S,$(BUILD)/%.o,$(notdir $(RUNTIME_ASM)))
-
-# LLVM IR / assembly -> MIPS N32 object, for the EE.
-CLANG_FLAGS = -c -fno-pic --target=mips64el-unknown-none-gnuabin32 -mcpu=r5900 -mabi=n32 -mhard-float -msingle-float \
-              -mxgot -mlittle-endian -fno-inline-functions
-
-# Link. The linker script is the ps2sdk one with one section added in front
-# of .data: the Go program's own .data and .bss, bracketed by
-# _globals_start/_globals_end, which is the range the GC scans for roots.
-# Scanning the whole SDK .data..bss instead pinned megabytes of heap: the
-# kernel patch blobs in libkernel are full of words that look like pointers.
-# Data that must not be scanned (big buffers, counters) can be placed in the
-# .ps2go.noscan section. The script is generated per program (build/%.ld).
-# The libc heap size (LIBC_HEAP) is the one number given here; the generated
-# linker script (build/%.ld) derives the heap and stack symbols from it.
-SDK_LINKFILE = $(PS2DEV)/ps2sdk/ee/startup/linkfile
-# -u scr_printf pulls libdebug's screen printf in so the runtime can show a
-# bad memory map on the TV, not only on the serial port.
-EE_LDFLAGS  = -Wl,--defsym=_heap_size=$(or $($*_LIBC_HEAP),$(LIBC_HEAP)) \
-              -Wl,-u,init_scr -Wl,-u,scr_printf \
-              -Wl,-zmax-page-size=128 -mhard-float -msingle-float
-EE_LIBS     = -L$(PS2SDK_IMG)/ee/lib -L$(PS2SDK_IMG)/ports/lib -L$(PS2DEV_IMG)/gsKit/lib \
-              -lpatches -lfileXio -lpad -ldebug -lgskit_toolkit -lgskit -ldmakit -lpng -ljpeg -lz
+# What tinygo needs from the environment: the SDK root for targets/ps2.json
+# and the gcc (wrapper) on PATH.
+TINYGO_ENV = PS2DEV=$(PS2DEV) PS2DEV_IMAGE=$(IMAGE) PATH=$(CURDIR)/tools:$$PATH \
+             PS2GO_HARNESS=$(CURDIR)/harness PS2GO_PCSX2_DIR=$(PCSX2_DIR)
 
 # ---------------------------------------------------------------------------
 # Rules
 # ---------------------------------------------------------------------------
 
-.PHONY: all $(DEMOS) $(TESTS) $(CONTROLS) check check-harness shell clean
+.PHONY: all $(DEMOS) $(TESTS) $(CONTROLS) check check-harness check-gotest shell clean
 .DELETE_ON_ERROR:
 
 all: $(DEMOS) $(TESTS)
@@ -126,66 +86,19 @@ $(DEMOS) $(TESTS) $(CONTROLS): %: $(BUILD)/%.elf
 $(BUILD):
 	$(Q)mkdir -p $@
 
-# Link: runtime glue (assembly) and the program.
-$(BUILD)/%.elf: $(RUNTIME_OBJS) $(BUILD)/%.o $(BUILD)/%.ld $(MAKEFILES_)
-	@echo "  LINK    $@"
-	$(Q)mkdir -p $(@D)
-	$(Q)$(DOCKER) sh -c '$(EE_OBJCOPY) --set-section-flags .bss=alloc,load,contents,data $(BUILD)/$*.o && \
-	  $(EE_CC) -T$(BUILD)/$*.ld $(EE_LDFLAGS) $($*_LDFLAGS) -o $@ $(filter %.o,$^) $(EE_LIBS)'
-
-# Linker script for one program: the SDK script plus the Go globals section.
-$(BUILD)/%.ld: $(SDK_LINKFILE) $(MAKEFILES_)
-	@echo "  LDSCRIPT $@"
-	$(Q)mkdir -p $(@D)
-	$(Q)awk -v go='$(BUILD)/$*.o' '\
-	  /^\t\.data ALIGN\(128\): \{/ { \
-	    print "\t/* Go globals: the range the GC scans for roots (ps2go). The"; \
-	    print "\t   program has a single load segment, so the Go .bss is turned"; \
-	    print "\t   into file-backed zeros (objcopy, see the link rule). */"; \
-	    print "\t.go.data ALIGN(16): {"; \
-	    print "\t\t_globals_start = . ;"; \
-	    print "\t\t" go "(.data .data.* .bss .bss.* COMMON)"; \
-	    print "\t\t. = ALIGN(16);"; \
-	    print "\t\t_globals_end = . ;"; \
-	    print "\t}"; \
-	    print; print "\t\t*(.ps2go.noscan)"; next } \
-	  /^\tPROVIDE\(_stack_size = / { print; \
-	    print "\t/* ps2go memory map: program | libc heap | Go heap | stack. crt0 caps"; \
-	    print "\t   the libc heap at _end+_heap_size (SetupHeap) and asks the kernel for"; \
-	    print "\t   a stack of _stack_size bytes below the top page of RAM, which the"; \
-	    print "\t   kernel keeps; the Go heap fills the gap. _heap_size is given with"; \
-	    print "\t   --defsym (LIBC_HEAP); the runtime checks all this against the kernel. */"; \
-	    print "\t_heap_start = (_end + _heap_size + 15) & ~15;"; \
-	    print "\t_stack_top = 0x02000000 - 0x1000;"; \
-	    print "\t_heap_end = _stack_top - _stack_size;"; next } \
-	  { print }' $< > $@
-	$(Q)grep -q '_globals_end' $@ && grep -q '_heap_start' $@ || { echo "failed to patch $(SDK_LINKFILE)"; rm -f $@; exit 1; }
-
-# Go -> LLVM IR. Demos import the shared packages, so depend on all Go sources
-# (and on the embedded IOP modules).
+# Demos import the shared packages, so depend on all Go sources (and on the
+# embedded IOP modules).
 GO_SOURCES := $(shell find . -name '*.go' -not -path './$(BUILD)/*')
-$(BUILD)/%.ll: $(GO_SOURCES) $(IRX_FILES) $(MAKEFILES_) | $(BUILD)
+$(BUILD)/%.elf: $(GO_SOURCES) $(IRX_FILES) $(MAKEFILES_) | $(BUILD)
 	@echo "  TINYGO  $@"
 	$(Q)mkdir -p $(@D)
-	$(Q)CGO_CFLAGS="$(CGO_CFLAGS)" $(TINYGO) build $(TINYGO_FLAGS) $($*_TINYGO_FLAGS) -o $@ ./$*
-
-$(BUILD)/%.o: $(BUILD)/%.ll
-	@echo "  CLANG   $@"
-	$(Q)$(CLANG) $(CLANG_FLAGS) -o $@ $<
-
-$(BUILD)/asm_ps2.o: $(TINYGOROOT)/src/runtime/asm_ps2.S
-$(BUILD)/task_stack_ps2.o: $(TINYGOROOT)/src/internal/task/task_stack_ps2.S
-$(RUNTIME_OBJS): $(MAKEFILES_) | $(BUILD)
-	@echo "  CLANG   $@"
-	$(Q)$(CLANG) $(CLANG_FLAGS) -o $@ $(filter %.S,$^)
+	$(Q)$(TINYGO_ENV) $(TINYGO) build $(TINYGO_FLAGS) $($*_TINYGO_FLAGS) \
+	  -ldflags '-extldflags "-Wl,--defsym=_heap_size=$(or $($*_LIBC_HEAP),$(LIBC_HEAP))"' -o $@ ./$*
 
 # IOP modules from the ps2sdk in the image, for the resources package.
 resources/%.irx:
 	@echo "  IRX     $@"
 	$(Q)$(DOCKER) cp $(PS2SDK_IMG)/iop/irx/$*.irx $@
-
-# Keep intermediate files (.ll, .o) instead of deleting them after the link.
-.SECONDARY:
 
 # Run the test suite in PCSX2 (headless). TIMEOUT is in seconds.
 TIMEOUT ?= 120
@@ -202,6 +115,13 @@ check-harness: $(patsubst %,$(BUILD)/%.elf,$(CONTROLS)) $(BUILD)/tests.elf
 	$(PS2TEST) --expect CRASH   $(BUILD)/controls/deadlock.elf
 	$(PS2TEST) --expect CRASH   $(BUILD)/controls/gopanic.elf
 	$(PS2TEST) --expect PASS    $(BUILD)/tests.elf
+
+# Go's own testing package on the PS2: `tinygo test` builds the test binary
+# and runs it in PCSX2 through the harness (the target's emulator). The
+# second run must fail (it includes a failing test).
+check-gotest:
+	$(TINYGO_ENV) $(TINYGO) test $(TINYGO_FLAGS) ./gotest
+	! $(TINYGO_ENV) $(TINYGO) test $(TINYGO_FLAGS) -tags ps2fail ./gotest
 
 # Run any ELF for TIMEOUT seconds and stream its serial output.
 run-%: $(BUILD)/%.elf
