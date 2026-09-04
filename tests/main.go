@@ -17,6 +17,7 @@ func main() {
 		{Name: "float64-compare", Fn: testFloat64Compare},
 		{Name: "float32-arith", Fn: testFloat32Arith},
 		{Name: "float64-arith", Fn: testFloat64Arith},
+		{Name: "float-int-conv", Fn: testFloatIntConv},
 		{Name: "atomics", Fn: testAtomics},
 		{Name: "cgo-abi", Fn: testCgoABI},
 		{Name: "embed", Fn: testEmbed},
