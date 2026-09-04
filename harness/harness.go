@@ -53,11 +53,12 @@ const (
 	fMallocs           //
 	fFrees             //
 	fXFailed           // cases that failed as expected (XFail set)
+	fNumGC             // completed collections
 )
 
 const (
 	Magic   = 0x47325350 // "PS2G" as a little-endian uint32
-	Version = 1
+	Version = 2
 )
 
 func set(i int, v uint32) { C.ps2go_block_set(C.int(i), C.uint(v)) }
@@ -109,6 +110,7 @@ func UpdateStats() {
 	set(fTotalAlloc, uint32(ms.TotalAlloc))
 	set(fMallocs, uint32(ms.Mallocs))
 	set(fFrees, uint32(ms.Frees))
+	set(fNumGC, ms.NumGC)
 }
 
 // Run executes the cases in order, reports, and then parks the EE thread so

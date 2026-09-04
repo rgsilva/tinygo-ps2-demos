@@ -23,7 +23,7 @@ BLOCK_SYMBOL = "ps2go_harness_block"
 BLOCK_MAGIC = 0x47325350
 BLOCK_FIELDS = ["magic", "version", "state", "cases", "passed", "failed", "current",
                 "heap_start", "heap_end", "heap_inuse", "heap_idle", "total_alloc",
-                "mallocs", "frees", "xfailed"]
+                "mallocs", "frees", "xfailed", "num_gc"]
 # Log lines that mean the guest died. Refined against controls/crash.
 CRASH_PATTERNS = [
     re.compile(r"TLB Miss", re.I),
@@ -260,7 +260,7 @@ def main():
     elapsed = time.time() - t0
     if block:
         say(f"  final stats: state={block['state']} passed={block['passed']} failed={block['failed']} xfailed={block['xfailed']} "
-            f"heap_inuse={block['heap_inuse']} heap_idle={block['heap_idle']} mallocs={block['mallocs']} frees={block['frees']}")
+            f"heap_inuse={block['heap_inuse']} heap_idle={block['heap_idle']} mallocs={block['mallocs']} frees={block['frees']} num_gc={block['num_gc']}")
     if args.run:
         return 0
     if verdict != "PASS" and os.path.exists(log):

@@ -6,6 +6,7 @@ import "ps2go/harness"
 func main() {
 	cases := []harness.Case{
 		{Name: "hello", Fn: hello},
+		{Name: "gc-floor", Fn: testGCFloor},
 		{Name: "strings", Fn: testStrings},
 		{Name: "slices-maps", Fn: testSlicesMaps},
 		{Name: "interfaces-closures", Fn: testInterfacesClosures},
@@ -30,6 +31,7 @@ func main() {
 		{Name: "gc-large", Fn: testGCLarge},
 		{Name: "gc-natural", Fn: testGCNatural},
 		{Name: "gc-finalizer", Fn: testGCFinalizer},
+		{Name: "gc-sweep-time", Fn: testGCSweepTime},
 	}
 	cases = append(cases,
 		harness.Case{Name: "timer", Fn: testTimer},
