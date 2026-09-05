@@ -53,7 +53,7 @@ $(foreach c,$(CONTROLS),$(eval dir_$c = tests/controls/$c))
 dir_tests = tests/suite
 
 # IOP modules embedded by the iop package, taken from the ps2sdk.
-IRX = freesio2 freepad
+IRX = freesio2 freepad ps2dev9 netman smap ps2ip-nm ps2ip ps2ips
 IRX_FILES = $(addprefix lib/iop/,$(addsuffix .irx,$(IRX)))
 # Raw GS textures made from the demos' PNGs (rule below).
 RAW_FILES = $(patsubst %.png,%.raw,$(wildcard demos/*/assets/*.png))
@@ -100,9 +100,9 @@ $(DEMOS) $(TESTS) $(CONTROLS): %: $(BUILD)/%.elf
 $(BUILD):
 	$(Q)mkdir -p $@
 
-# Demos import the shared packages, so depend on all Go sources (and on the
-# embedded IOP modules).
-GO_SOURCES := $(shell find . -name '*.go' -not -path './$(BUILD)/*')
+# Programs import the shared packages, so depend on all their sources (Go,
+# and the C files cgo compiles) and on the embedded IOP modules.
+GO_SOURCES := $(shell find . \( -name '*.go' -o -name '*.c' -o -name '*.h' -o -name '*.S' \) -not -path './$(BUILD)/*')
 $(BUILD)/%.elf: $(GO_SOURCES) $(IRX_FILES) $(RAW_FILES) $(MAKEFILES_) | $(BUILD)
 	@echo "  TINYGO  $@"
 	$(Q)mkdir -p $(@D)
