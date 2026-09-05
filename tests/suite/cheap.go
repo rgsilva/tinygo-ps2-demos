@@ -178,8 +178,10 @@ func testGsKitAlloc() error {
 	tex.VRAM = gskit.VRAMAlloc(gs, gskit.TextureSize(tex.Width, tex.Height, tex.PSM), gskit.GSKIT_ALLOC_USERBUFFER)
 	gskit.TextureUpload(gs, tex)
 
-	font := gskit.InitFontFromMemory(unsafe.Pointer(&fonts.Arial[0]), len(fonts.Arial))
-	gskit.FontUpload(gs, font)
+	font := gskit.InitFontFromMemory(fonts.Arial)
+	if err := gskit.FontUpload(gs, font); err != nil {
+		return err
+	}
 
 	brk1 := libcBreak()
 	var junk [][]byte

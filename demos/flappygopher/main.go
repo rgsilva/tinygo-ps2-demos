@@ -58,7 +58,7 @@ var (
 	pipeTex               gskit.GSTexture
 	gameOverTex           gskit.GSTexture
 	skyTex                gskit.GSTexture
-	textFont              gskit.GSFont
+	textFont              *gskit.GSFont
 	pad0                  *libpad.Pad
 	debounceCounter       int32
 	debounceCounterTarget int32
@@ -326,8 +326,9 @@ func loadSkyTexture() {
 }
 
 func loadFont() {
-	textFont = gskit.InitFontFromMemory(unsafe.Pointer(&fonts.Arial[0]), len(fonts.Arial))
-	gskit.FontUpload(gsGlobal, textFont)
+	textFont = gskit.InitFontFromMemory(fonts.Arial)
+	must(gskit.FontUpload(gsGlobal, textFont))
+	textFont.AddSpacing(-2) // tighter than the font's own advance widths
 }
 
 func drawFrame() {
