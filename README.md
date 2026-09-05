@@ -9,10 +9,12 @@ This is a hobby project and I'm not a game developer. This project was created f
 
 ## Layout
 
-* `demos/` — the programs, one directory each (`demos/flappygopher`, `demos/blend` as a blending check).
+* `demos/` — the programs, one directory each: `flappygopher`, `blend` (a blending check),
+  `httpclient`, `httpserver` and `imagestream` (network; the last one talks to `tools/imageserver.py`).
 * `lib/` — Go packages: cgo bindings to the ps2sdk libraries (`gskit`, `dmakit`, `libpad`,
-  `sifrpc`, `rtc`, `debug`), the embedded IOP modules (`iop`), a gsKit font
-  (`fonts`) and the guest side of the test harness (`harness`).
+  `sifrpc`, `rtc`, `debug`, `netman`, `ps2ip`), the network driver for Go's `net` package
+  (`ps2net`), the embedded IOP modules (`iop`), a gsKit font (`fonts`) and the guest side of
+  the test harness (`harness`).
 * `tests/` — the harness suite (`suite`), the negative controls (`controls/*`), the
   `tinygo test` example (`gotest`) and the visual checks' steps and reference images (`visual`).
 * `tools/` — the Docker wrapper for the ps2sdk gcc and the PCSX2 harness (`pcsx2/`).
@@ -76,6 +78,21 @@ Then:
 The guest side is the `lib/harness` package: call `harness.Run` with your cases, and use
 `harness.Log` (or plain `println`) for output. Goroutines, channels, timers and recover
 are all covered by the suite.
+
+## Networking
+
+`ps2net.Up` loads the network modules onto the IOP (DEV9, netman, the ethernet driver, the
+TCP/IP stack and its socket RPC), gets a DHCP lease (or applies a static configuration) and
+installs the driver behind TinyGo's `net` package: `net.Dial`, `net.Listen`, `net/http` and
+friends work from then on. Names are resolved by the driver itself (one A query to the lease's
+DNS server; the stack's own resolver is broken over the RPC). Transfers go in 960-byte RPC
+pieces and each socket call is a round trip to the IOP, so expect about a megabyte per second.
+
+`make check-net` runs `tests/net/` and boots the network demos in PCSX2 with the emulated
+ethernet (`ps2test.py --net`: DEV9 through PCSX2's Sockets backend, which needs no privileges;
+the harness answers as `host.ps2go` with an echo server, an HTTP server and the image server).
+The emulator hands out 192.0.2.100 and cannot deliver inbound connections, so listening is an
+expected failure there; on the console `httpserver` is reachable from the LAN.
 
 ## Memory notes
 

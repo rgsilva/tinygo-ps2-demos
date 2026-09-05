@@ -28,7 +28,7 @@ V      ?= 0
 # from the ps2sdk in the image. `make <name>` builds build/<name>.elf.
 # ---------------------------------------------------------------------------
 
-DEMOS = flappygopher blend
+DEMOS = flappygopher blend httpclient httpserver imagestream
 
 # Per-program knobs: <name>_TINYGO_FLAGS and <name>_LIBC_HEAP. Libraries are
 # declared by the packages that use them (#cgo LDFLAGS lines).
@@ -129,9 +129,16 @@ PS2TEST = PS2GO_PCSX2_DIR=$(PCSX2_DIR) $(PYTHON) tools/pcsx2/ps2test.py --timeou
 check: $(BUILD)/tests.elf
 	$(PS2TEST) $<
 
-# Network checks in PCSX2 with the emulated ethernet (DEV9, Sockets backend).
-check-net: $(BUILD)/net.elf
-	$(PS2TEST) --net $<
+# Network checks in PCSX2 with the emulated ethernet (DEV9 through PCSX2's
+# Sockets backend; the harness runs echo, HTTP and image servers on this
+# machine as host.ps2go). The demos are booted until they are on the
+# network; the HTTP client then needs the internet, so only its lease is
+# checked.
+check-net: $(BUILD)/net.elf $(BUILD)/httpclient.elf $(BUILD)/httpserver.elf $(BUILD)/imagestream.elf
+	$(PS2TEST) --net $(BUILD)/net.elf
+	$(PS2TEST) --net --until 'Network up' --timeout 60 $(BUILD)/httpclient.elf
+	$(PS2TEST) --net --until 'Listening on' --timeout 60 $(BUILD)/httpserver.elf
+	$(PS2TEST) --net --until 'image 3' --timeout 90 $(BUILD)/imagestream.elf
 
 # Prove the harness itself: each control must produce its verdict.
 check-harness: $(patsubst %,$(BUILD)/%.elf,$(CONTROLS)) $(BUILD)/tests.elf $(BUILD)/flappygopher.elf
