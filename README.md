@@ -7,6 +7,16 @@ to use this as you wish.
 This is a hobby project and I'm not a game developer. This project was created for fun only. The write-up is provided in
 [my blog](https://rgsilva.com/blog/), so feel free to check it out there.
 
+## Layout
+
+* `demos/` — the programs, one directory each (`demos/flappygopher`).
+* `lib/` — Go packages: cgo bindings to the ps2sdk libraries (`gskit`, `dmakit`, `libpad`,
+  `sifrpc`, `rtc`, `clock`, `debug`, `random`), the embedded IOP modules (`iop`), a gsKit font
+  (`fonts`) and the guest side of the test harness (`harness`).
+* `tests/` — the harness suite (`suite`), the negative controls (`controls/*`) and the
+  `tinygo test` example (`gotest`).
+* `tools/` — the Docker wrapper for the ps2sdk gcc and the PCSX2 harness (`pcsx2/`).
+
 ## Building
 
 Currently this requires a custom version of the TinyGo compiler. The custom version is provided
