@@ -34,9 +34,9 @@ import (
 	"runtime"
 	"unsafe"
 
-	"ps2go/dmakit"
-	"ps2go/gskit"
 	"ps2go/harness"
+	"ps2go/lib/dmakit"
+	"ps2go/lib/gskit"
 	"ps2go/resources"
 )
 

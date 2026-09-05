@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"ps2go/harness"
-	"ps2go/rtc"
+	"ps2go/lib/rtc"
 )
 
 // testRTC syncs the wall clock from the console's RTC (JST on the hardware

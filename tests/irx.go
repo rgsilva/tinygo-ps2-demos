@@ -8,8 +8,8 @@ import (
 	"unsafe"
 
 	"ps2go/harness"
+	"ps2go/lib/sifrpc"
 	"ps2go/resources"
-	"ps2go/sifrpc"
 )
 
 func testIRX() error {

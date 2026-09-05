@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
-	"ps2go/clock"
-	"ps2go/debug"
-	"ps2go/dmakit"
-	"ps2go/gskit"
-	"ps2go/libpad"
-	"ps2go/random"
+	"ps2go/lib/clock"
+	"ps2go/lib/debug"
+	"ps2go/lib/dmakit"
+	"ps2go/lib/gskit"
+	"ps2go/lib/libpad"
+	"ps2go/lib/random"
+	"ps2go/lib/sifrpc"
 	"ps2go/resources"
-	"ps2go/sifrpc"
 	"unsafe"
 )
 
