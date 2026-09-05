@@ -32,6 +32,9 @@ ps2dev toolchain on `PATH` works too). So you'll need Docker; the image is pulle
 on the first build. The target (`targets/ps2.json` in the fork) finds the SDK headers and
 libraries through the `PS2DEV` environment variable, which the Makefile sets.
 
+The fork's `net` package is a git submodule: run `git submodule update --init src/net` in the
+TinyGo tree once, or the network packages will not build.
+
 Tell the Makefile where your tools are, either in a `config.mk` file next to it (gitignored):
 
 ```make
