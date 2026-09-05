@@ -1,0 +1,4 @@
+# Blend check: the blue square must be translucent over white and black.
+until Ready
+sleep 0.5
+shot blend

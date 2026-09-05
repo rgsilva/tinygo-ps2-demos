@@ -9,7 +9,7 @@ This is a hobby project and I'm not a game developer. This project was created f
 
 ## Layout
 
-* `demos/` — the programs, one directory each (`demos/flappygopher`).
+* `demos/` — the programs, one directory each (`demos/flappygopher`, `demos/blend` as a blending check).
 * `lib/` — Go packages: cgo bindings to the ps2sdk libraries (`gskit`, `dmakit`, `libpad`,
   `sifrpc`, `rtc`, `debug`), the embedded IOP modules (`iop`), a gsKit font
   (`fonts`) and the guest side of the test harness (`harness`).

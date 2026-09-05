@@ -28,7 +28,7 @@ V      ?= 0
 # from the ps2sdk in the image. `make <name>` builds build/<name>.elf.
 # ---------------------------------------------------------------------------
 
-DEMOS = flappygopher
+DEMOS = flappygopher blend
 
 # Per-program knobs: <name>_TINYGO_FLAGS and <name>_LIBC_HEAP. Libraries are
 # declared by the packages that use them (#cgo LDFLAGS lines).
@@ -145,7 +145,7 @@ check-harness: $(patsubst %,$(BUILD)/%.elf,$(CONTROLS)) $(BUILD)/tests.elf $(BUI
 # compares them with the reference images next to it. The captures land in
 # build/visual (with a .diff.png for a mismatch). `make visual-refs` rewrites
 # the references after an intended change: eyeball them before committing.
-VISUAL = flappygopher
+VISUAL = flappygopher blend
 check-visual: $(patsubst %,$(BUILD)/%.elf,$(VISUAL))
 	$(foreach d,$(VISUAL),$(PS2TEST) --visual tests/visual/$d.steps --shots-dir $(BUILD)/visual $(BUILD)/$d.elf &&) true
 visual-refs: $(patsubst %,$(BUILD)/%.elf,$(VISUAL))
