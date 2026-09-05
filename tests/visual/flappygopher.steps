@@ -1,0 +1,14 @@
+# Flappy Gopher: the menu, the game after Start (the gopher flaps once),
+# and the game over screen once it has fallen. Screenshots are compared with
+# the PNGs of the same name in this directory (make visual-refs rewrites them).
+until Game start
+sleep 0.5
+shot flappygopher-menu
+pad start
+sleep 0.5
+pad cross
+sleep 0.5
+shot flappygopher-ingame 15
+until Game over
+sleep 0.5
+shot flappygopher-gameover

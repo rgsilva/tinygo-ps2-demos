@@ -512,6 +512,7 @@ func randomPipe(x int32) Pipe {
 }
 
 func endGame() {
+	debug.Printf("Game over\n")
 	gameState = GameOver
 	debounceCounter = 0
 	debounceCounterTarget = WaitFramesAfterGameOver
@@ -522,6 +523,7 @@ func endGame() {
 }
 
 func goToMenu() {
+	debug.Printf("Menu\n")
 	gameState = Menu
 	debounceCounter = 0
 	debounceCounterTarget = WaitFramesOnMenu
