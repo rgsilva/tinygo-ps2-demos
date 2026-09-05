@@ -31,3 +31,8 @@ func GS_SETREG_ALPHA(A, B, C, D uint8, FIX uint16) uint64 {
 		uint64(D)<<6 |
 		uint64(FIX)<<32
 }
+
+// GS_BLEND_SOURCE_ALPHA is the usual blend: (Cs - Cd) * As + Cd, so alpha
+// 0 is transparent and 0x80 opaque. gsKit's default (GS_BLEND_BACK2FRONT)
+// is the reverse; set this with SetPrimAlpha after InitScreen.
+var GS_BLEND_SOURCE_ALPHA = GS_SETREG_ALPHA(0, 1, 0, 1, 0)

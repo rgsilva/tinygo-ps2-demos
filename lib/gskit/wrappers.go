@@ -52,3 +52,22 @@ func Clear(gs GSGlobal, r, g, b, a, q byte) {
 func QueueExec(g GSGlobal) {
 	C.gsKit_queue_exec(g.toNative())
 }
+
+// SetTest applies one of the GS_ZTEST_*/GS_ATEST_*/GS_D_ATEST_* presets.
+func SetTest(g GSGlobal, preset int) {
+	C.gsKit_set_test(g.toNative(), C.uchar(preset))
+}
+
+// SetAlphaTest enables the alpha test: pixels whose alpha does not compare
+// (GS_ATEST_* method) against ref are discarded.
+func SetAlphaTest(g GSGlobal, method, ref int) {
+	g.native.Test.ATST = C.uchar(method)
+	g.native.Test.AREF = C.uchar(ref)
+	C.gsKit_set_test(g.toNative(), GS_ATEST_ON)
+}
+
+// SetPrimAlpha sets the blending equation (GS_BLEND_* or GS_SETREG_ALPHA)
+// for primitives drawn with PrimAlphaEnable, per pixel if perPixel.
+func SetPrimAlpha(g GSGlobal, mode uint64, perPixel bool) {
+	C.gsKit_set_primalpha(g.toNative(), C.ulonglong(mode), boolToCuchar(perPixel))
+}

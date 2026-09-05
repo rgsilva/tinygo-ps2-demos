@@ -192,10 +192,12 @@ func initGraphics() {
 	gsGlobal.SetPSMZ(gskit.GS_PSMZ_16S)
 	gsGlobal.SetDoubleBuffering(true)
 	gsGlobal.SetZBuffering(false)
-	gsGlobal.SetPrimAlphaEnable(false)
 
 	// Initialize screen
 	gskit.InitScreen(gsGlobal)
+	// Blend by texture alpha.
+	gsGlobal.SetPrimAlphaEnable(true)
+	gskit.SetPrimAlpha(gsGlobal, gskit.GS_BLEND_SOURCE_ALPHA, false)
 }
 
 // Textures are raw pixel data in the CT32 format, drawn unfiltered.
@@ -332,17 +334,16 @@ func drawInGame() {
 		return
 	}
 
-	// Draw the background
-	// TODO: disable as alpha is broken.
-	//gskit.PrimSpriteTexture3D(
-	//	gsGlobal,
-	//	skyTex,
-	//	0, 0, 10,
-	//	0, 0,
-	//	int(maxX), int(maxY), 1,
-	//	int(skyTex.Width()), int(skyTex.Height()),
-	//	gskit.GS_SETREG_RGBAQ(0x80, 0x80, 0x80, 0x80, 0x00),
-	//)
+	// Draw the background (first: no Z buffer, later draws go on top).
+	gskit.PrimSpriteTexture3D(
+		gsGlobal,
+		skyTex,
+		0, 0, 1,
+		0, 0,
+		float32(maxX), float32(maxY), 1,
+		float32(skyTex.Width()), float32(skyTex.Height()),
+		gskit.GS_SETREG_RGBAQ(0x80, 0x80, 0x80, 0x80, 0x00),
+	)
 
 	// Draw the Gopher. Width 0 to 64 is it going down, width 65 to 128 is it going up.
 	textureX := 0

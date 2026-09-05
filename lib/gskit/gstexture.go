@@ -86,3 +86,8 @@ func PrimSpriteTexture3D(
 		C.ulonglong(color),
 	)
 }
+
+// PrimSprite draws a flat-colored rectangle (x1,y1)-(x2,y2) at depth z.
+func PrimSprite(gs GSGlobal, x1, y1, x2, y2 float32, z int, color uint64) {
+	C.gsKit_prim_sprite(gs.toNative(), C.float(x1), C.float(y1), C.float(x2), C.float(y2), C.int(z), C.ulonglong(color))
+}

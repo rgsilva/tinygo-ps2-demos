@@ -31,4 +31,3 @@ func (g GSGlobal) SetPSMZ(psmz int)          { g.native.PSMZ = C.int(psmz) }
 func (g GSGlobal) SetDoubleBuffering(b bool) { g.native.DoubleBuffering = boolToCuchar(b) }
 func (g GSGlobal) SetZBuffering(b bool)      { g.native.ZBuffering = boolToCuchar(b) }
 func (g GSGlobal) SetPrimAlphaEnable(b bool) { g.native.PrimAlphaEnable = boolToCint(b) }
-func (g GSGlobal) SetPrimAlpha(a uint64)     { g.native.PrimAlpha = C.ulonglong(a) }
