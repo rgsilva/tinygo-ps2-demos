@@ -6,35 +6,35 @@ package gskit
 #define _EE
 #include <gsKit.h>
 #include <gsToolkit.h>
-
-float intToFloat(int i) {
-	return (float)i;
-}
 */
 import "C"
+import "fmt"
 
 func InitGlobal() GSGlobal {
-	gsGlobal := C.gsKit_init_global_custom(
+	return GSGlobal{native: C.gsKit_init_global_custom(
 		C.int(GS_RENDER_QUEUE_OS_POOLSIZE),
-		C.int(GS_RENDER_QUEUE_PER_POOLSIZE))
-	return GSGlobal{
-		native:          gsGlobal,
-		Width:           uint32(gsGlobal.Width),
-		Height:          uint32(gsGlobal.Height),
-		PSM:             int(gsGlobal.PSM),
-		PSMZ:            int(gsGlobal.PSMZ),
-		DoubleBuffering: bool(gsGlobal.DoubleBuffering == 0x01),
-		ZBuffering:      bool(gsGlobal.ZBuffering == 0x01),
-		PrimAlphaEnable: bool(gsGlobal.PrimAlphaEnable == 0x01),
-	}
+		C.int(GS_RENDER_QUEUE_PER_POOLSIZE))}
 }
 
 func InitScreen(g GSGlobal) {
 	C.gsKit_init_screen(g.toNative())
 }
 
-func VRAMAlloc(g GSGlobal, size int, typ int) uint {
-	return uint(C.gsKit_vram_alloc(g.toNative(), C.uint(size), C.uchar(typ)))
+// VRAMAlloc allocates size bytes of VRAM (GSKIT_ALLOC_*) and returns the
+// address. Call it after InitScreen, which takes the frame and Z buffers
+// from the start of VRAM: after that no allocation can be at 0, which is
+// gsKit's error value.
+func VRAMAlloc(g GSGlobal, size int, typ int) (uint32, error) {
+	addr := uint32(C.gsKit_vram_alloc(g.toNative(), C.uint(size), C.uchar(typ)))
+	if addr == GSKIT_ALLOC_ERROR {
+		return 0, fmt.Errorf("gskit: out of VRAM allocating %d bytes", size)
+	}
+	return addr, nil
+}
+
+// VRAMClear frees all VRAM allocations (gsKit's allocator is linear).
+func VRAMClear(g GSGlobal) {
+	C.gsKit_vram_clear(g.toNative())
 }
 
 func SyncFlip(g GSGlobal) {

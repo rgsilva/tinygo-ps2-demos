@@ -11,7 +11,6 @@ import (
 	"ps2go/lib/libpad"
 	"ps2go/lib/sifrpc"
 	"time"
-	"unsafe"
 )
 
 type (
@@ -53,11 +52,11 @@ const (
 var (
 	// Engine stuff
 	gsGlobal              gskit.GSGlobal
-	gopherTex             gskit.GSTexture
-	birdTex               gskit.GSTexture
-	pipeTex               gskit.GSTexture
-	gameOverTex           gskit.GSTexture
-	skyTex                gskit.GSTexture
+	gopherTex             *gskit.GSTexture
+	birdTex               *gskit.GSTexture
+	pipeTex               *gskit.GSTexture
+	gameOverTex           *gskit.GSTexture
+	skyTex                *gskit.GSTexture
 	textFont              *gskit.GSFont
 	pad0                  *libpad.Pad
 	debounceCounter       int32
@@ -68,7 +67,7 @@ var (
 	gameState    GameState
 	isGoingUp    bool
 	targetY      uint32
-	maxX, maxY   uint32
+	maxX, maxY   int
 	birdY        uint32
 	pipes        []Pipe
 	currentScore int32
@@ -121,8 +120,8 @@ func main() {
 	highScore = 0
 	debounceCounterTarget = 0
 	debounceCounter = 0
-	maxX = gsGlobal.Width
-	maxY = gsGlobal.Height
+	maxX = gsGlobal.Width()
+	maxY = gsGlobal.Height()
 
 	debug.Printf("Game start\n")
 	for {
@@ -189,140 +188,28 @@ func initDMA() {
 func initGraphics() {
 	// Initialize the global graphics state
 	gsGlobal = gskit.InitGlobal()
-	gsGlobal.PSM = gskit.GS_PSM_CT24
-	gsGlobal.PSMZ = gskit.GS_PSMZ_16S
-	gsGlobal.DoubleBuffering = true
-	gsGlobal.ZBuffering = false
-	gsGlobal.PrimAlphaEnable = false
+	gsGlobal.SetPSM(gskit.GS_PSM_CT24)
+	gsGlobal.SetPSMZ(gskit.GS_PSMZ_16S)
+	gsGlobal.SetDoubleBuffering(true)
+	gsGlobal.SetZBuffering(false)
+	gsGlobal.SetPrimAlphaEnable(false)
 
 	// Initialize screen
 	gskit.InitScreen(gsGlobal)
 }
 
-func loadGopherTexture() {
-	gopherTex = gskit.NewGSTexture()
-
-	// Set width, height, 32-bit format.
-	gopherTex.Width = 256
-	gopherTex.Height = 256
-	gopherTex.PSM = gskit.GS_PSM_CT32
-
-	// No smoothing
-	gopherTex.Filter = gskit.GS_FILTER_NEAREST
-
-	// No Color Lookup Table (CLUT) (EE RAM)
-	gopherTex.Clut = nil
-
-	// Point to our texture data (EE RAM)
-	gopherTex.Mem = unsafe.Pointer(&texGopher[0])
-
-	// Allocate the VRAM on GS (GS RAM)
-	textureSize := gskit.TextureSize(gopherTex.Width, gopherTex.Height, gopherTex.PSM)
-	gopherTex.VRAM = gskit.VRAMAlloc(gsGlobal, textureSize, gskit.GSKIT_ALLOC_USERBUFFER)
-
-	// Load the texture data into VRAM
-	gskit.TextureUpload(gsGlobal, gopherTex)
+// Textures are raw pixel data in the CT32 format, drawn unfiltered.
+func loadTexture(width, height int, data []byte) *gskit.GSTexture {
+	tex := gskit.NewTexture(width, height, gskit.GS_PSM_CT32, gskit.GS_FILTER_NEAREST)
+	must(tex.Upload(gsGlobal, data))
+	return tex
 }
 
-func loadBirdTexture() {
-	birdTex = gskit.NewGSTexture()
-
-	// Set width, height, 32-bit format.
-	birdTex.Width = 128
-	birdTex.Height = 53
-	birdTex.PSM = gskit.GS_PSM_CT32
-
-	// No smoothing
-	birdTex.Filter = gskit.GS_FILTER_NEAREST
-
-	// No Color Lookup Table (CLUT) (EE RAM)
-	birdTex.Clut = nil
-
-	// Point to our texture data (EE RAM)
-	birdTex.Mem = unsafe.Pointer(&texBird[0])
-
-	// Allocate the VRAM on GS (GS RAM)
-	textureSize := gskit.TextureSize(birdTex.Width, birdTex.Height, birdTex.PSM)
-	birdTex.VRAM = gskit.VRAMAlloc(gsGlobal, textureSize, gskit.GSKIT_ALLOC_USERBUFFER)
-
-	// Load the texture data into VRAM
-	gskit.TextureUpload(gsGlobal, birdTex)
-}
-
-func loadPipeTexture() {
-	pipeTex = gskit.NewGSTexture()
-
-	// Set width, height, 32-bit format.
-	pipeTex.Width = 174
-	pipeTex.Height = 64
-	pipeTex.PSM = gskit.GS_PSM_CT32
-
-	// No smoothing
-	pipeTex.Filter = gskit.GS_FILTER_NEAREST
-
-	// No Color Lookup Table (CLUT) (EE RAM)
-	pipeTex.Clut = nil
-
-	// Point to our texture data (EE RAM)
-	pipeTex.Mem = unsafe.Pointer(&texPipe[0])
-
-	// Allocate the VRAM on GS (GS RAM)
-	textureSize := gskit.TextureSize(pipeTex.Width, pipeTex.Height, pipeTex.PSM)
-	pipeTex.VRAM = gskit.VRAMAlloc(gsGlobal, textureSize, gskit.GSKIT_ALLOC_USERBUFFER)
-
-	// Load the texture data into VRAM
-	gskit.TextureUpload(gsGlobal, pipeTex)
-}
-
-func loadGameOverTexture() {
-	gameOverTex = gskit.NewGSTexture()
-
-	// Set width, height, 32-bit format.
-	gameOverTex.Width = 400
-	gameOverTex.Height = 267
-	gameOverTex.PSM = gskit.GS_PSM_CT32
-
-	// No smoothing
-	gameOverTex.Filter = gskit.GS_FILTER_NEAREST
-
-	// No Color Lookup Table (CLUT) (EE RAM)
-	gameOverTex.Clut = nil
-
-	// Point to our texture data (EE RAM)
-	gameOverTex.Mem = unsafe.Pointer(&texGameover[0])
-
-	// Allocate the VRAM on GS (GS RAM)
-	textureSize := gskit.TextureSize(gameOverTex.Width, gameOverTex.Height, gameOverTex.PSM)
-	gameOverTex.VRAM = gskit.VRAMAlloc(gsGlobal, textureSize, gskit.GSKIT_ALLOC_USERBUFFER)
-
-	// Load the texture data into VRAM
-	gskit.TextureUpload(gsGlobal, gameOverTex)
-}
-
-func loadSkyTexture() {
-	skyTex = gskit.NewGSTexture()
-
-	// Set width, height, 24-bit format.
-	skyTex.Width = 320
-	skyTex.Height = 214
-	skyTex.PSM = gskit.GS_PSM_CT32
-
-	// No smoothing
-	skyTex.Filter = gskit.GS_FILTER_NEAREST
-
-	// No Color Lookup Table (CLUT) (EE RAM)
-	skyTex.Clut = nil
-
-	// Point to our texture data (EE RAM)
-	skyTex.Mem = unsafe.Pointer(&texSky[0])
-
-	// Allocate the VRAM on GS (GS RAM)
-	textureSize := gskit.TextureSize(skyTex.Width, skyTex.Height, skyTex.PSM)
-	skyTex.VRAM = gskit.VRAMAlloc(gsGlobal, textureSize, gskit.GSKIT_ALLOC_USERBUFFER)
-
-	// Load the texture data into VRAM
-	gskit.TextureUpload(gsGlobal, skyTex)
-}
+func loadGopherTexture()   { gopherTex = loadTexture(256, 256, texGopher) }
+func loadBirdTexture()     { birdTex = loadTexture(128, 53, texBird) }
+func loadPipeTexture()     { pipeTex = loadTexture(174, 64, texPipe) }
+func loadGameOverTexture() { gameOverTex = loadTexture(400, 267, texGameover) }
+func loadSkyTexture()      { skyTex = loadTexture(320, 214, texSky) }
 
 func loadFont() {
 	textFont = gskit.InitFontFromMemory(fonts.Arial)
@@ -357,14 +244,14 @@ func drawFrame() {
 
 func drawMenu() {
 	// Draw the Gopher logo
-	gopherCenterX := (maxX - gopherTex.Width) / 2
+	gopherCenterX := (maxX - gopherTex.Width()) / 2
 	gskit.PrimSpriteTexture3D(
 		gsGlobal,
 		gopherTex,
-		int32(gopherCenterX), 0, 1,
+		float32(gopherCenterX), 0, 1,
 		0, 0,
-		int32(gopherCenterX+gopherTex.Width), int32(gopherTex.Height), 1,
-		int32(gopherTex.Width), int32(gopherTex.Height),
+		float32(gopherCenterX+gopherTex.Width()), float32(gopherTex.Height()), 1,
+		float32(gopherTex.Width()), float32(gopherTex.Height()),
 		gskit.GS_SETREG_RGBAQ(0x80, 0x80, 0x80, 0x80, 0x00),
 	)
 
@@ -380,7 +267,7 @@ func drawMenu() {
 		fmt.Sprintf("High score: %d", highScore),
 	}
 	for i, line := range lines {
-		y := int32(gopherTex.Height + uint32((i+1)*14))
+		y := float32(gopherTex.Height() + (i+1)*14)
 		gskit.FontPrint(
 			gsGlobal, textFont,
 			0, y, 1, 0.95,
@@ -421,7 +308,7 @@ func drawInGame() {
 	}
 
 	// If we're over the screen limit, it's game over.
-	if birdY > maxY {
+	if int(birdY) > maxY {
 		endGame()
 		return
 	}
@@ -429,7 +316,7 @@ func drawInGame() {
 	// Detect collision against each pipe.
 	for _, pipe := range pipes {
 		// Check if the pipe above/under bird. If not, carry on.
-		if pipe.X > int32(birdTex.Width/2) {
+		if pipe.X > int32(birdTex.Width()/2) {
 			continue
 		}
 
@@ -453,22 +340,22 @@ func drawInGame() {
 	//	0, 0, 10,
 	//	0, 0,
 	//	int(maxX), int(maxY), 1,
-	//	int(skyTex.Width), int(skyTex.Height),
+	//	int(skyTex.Width()), int(skyTex.Height()),
 	//	gskit.GS_SETREG_RGBAQ(0x80, 0x80, 0x80, 0x80, 0x00),
 	//)
 
 	// Draw the Gopher. Width 0 to 64 is it going down, width 65 to 128 is it going up.
-	textureX := uint32(0)
+	textureX := 0
 	if isGoingUp {
-		textureX = birdTex.Width/2 + 1
+		textureX = birdTex.Width()/2 + 1
 	}
 	gskit.PrimSpriteTexture3D(
 		gsGlobal,
 		birdTex,
-		0, int32(birdY), 1,
-		int32(textureX), 0,
-		int32(birdTex.Width/2), int32(birdY+birdTex.Height), 1,
-		int32(textureX+birdTex.Width/2), int32(birdTex.Height),
+		0, float32(birdY), 1,
+		float32(textureX), 0,
+		float32(birdTex.Width()/2), float32(int(birdY)+birdTex.Height()), 1,
+		float32(textureX+birdTex.Width()/2), float32(birdTex.Height()),
 		gskit.GS_SETREG_RGBAQ(0x80, 0x80, 0x80, 0x80, 0x00),
 	)
 
@@ -486,18 +373,18 @@ func drawInGame() {
 			}
 
 			// Everywhere else, draw it.
-			posY := s * int32(pipeTex.Height)
-			posYEnd := s*int32(pipeTex.Height) + int32(pipeTex.Height)
+			posY := float32(s * int32(pipeTex.Height()))
+			posYEnd := float32((s + 1) * int32(pipeTex.Height()))
 
 			if s == pipe.HoleEnd+1 && pipe.HoleEnd < PipeSections-1 {
 				// Bottom pipe head
 				gskit.PrimSpriteTexture3D(
 					gsGlobal,
 					pipeTex,
-					pipe.X-PipeHeadOffset, posY, 1,
-					int32(PipeHeadX), 0,
-					pipe.X+PipeHeadWidth-PipeHeadOffset, posYEnd, 1,
-					int32(PipeHeadX+PipeHeadWidth), int32(pipeTex.Height),
+					float32(pipe.X-PipeHeadOffset), posY, 1,
+					PipeHeadX, 0,
+					float32(pipe.X+PipeHeadWidth-PipeHeadOffset), posYEnd, 1,
+					PipeHeadX+PipeHeadWidth, float32(pipeTex.Height()),
 					gskit.GS_SETREG_RGBAQ(0x80, 0x80, 0x80, 0x80, 0x00),
 				)
 			} else if pipe.HoleStart > 0 && s == pipe.HoleStart-1 {
@@ -505,10 +392,10 @@ func drawInGame() {
 				gskit.PrimSpriteTexture3D(
 					gsGlobal,
 					pipeTex,
-					pipe.X-PipeHeadOffset, posY, 1,
-					int32(PipeHeadX), int32(pipeTex.Height),
-					pipe.X+PipeHeadWidth-PipeHeadOffset, posYEnd, 1,
-					int32(PipeHeadX+PipeHeadWidth), 0,
+					float32(pipe.X-PipeHeadOffset), posY, 1,
+					PipeHeadX, float32(pipeTex.Height()),
+					float32(pipe.X+PipeHeadWidth-PipeHeadOffset), posYEnd, 1,
+					PipeHeadX+PipeHeadWidth, 0,
 					gskit.GS_SETREG_RGBAQ(0x80, 0x80, 0x80, 0x80, 0x00),
 				)
 			} else {
@@ -516,10 +403,10 @@ func drawInGame() {
 				gskit.PrimSpriteTexture3D(
 					gsGlobal,
 					pipeTex,
-					pipe.X, posY, 1,
-					int32(PipeBodyX), 0,
-					pipe.X+PipeBodyWidth, posYEnd, 1,
-					int32(PipeBodyX+PipeBodyWidth), int32(pipeTex.Height),
+					float32(pipe.X), posY, 1,
+					PipeBodyX, 0,
+					float32(pipe.X+PipeBodyWidth), posYEnd, 1,
+					PipeBodyX+PipeBodyWidth, float32(pipeTex.Height()),
 					gskit.GS_SETREG_RGBAQ(0x80, 0x80, 0x80, 0x80, 0x00),
 				)
 			}
@@ -536,16 +423,16 @@ func drawInGame() {
 }
 
 func drawGameOver() {
-	centerX := (maxX - gameOverTex.Width) / 2
+	centerX := (maxX - gameOverTex.Width()) / 2
 
 	// Draw the Gopher logo
 	gskit.PrimSpriteTexture3D(
 		gsGlobal,
 		gameOverTex,
-		int32(centerX), 0, 1,
+		float32(centerX), 0, 1,
 		0, 0,
-		int32(centerX+gameOverTex.Width), int32(gameOverTex.Height), 1,
-		int32(gameOverTex.Width), int32(gameOverTex.Height),
+		float32(centerX+gameOverTex.Width()), float32(gameOverTex.Height()), 1,
+		float32(gameOverTex.Width()), float32(gameOverTex.Height()),
 		gskit.GS_SETREG_RGBAQ(0x80, 0x80, 0x80, 0x80, 0x00),
 	)
 
@@ -559,7 +446,7 @@ func drawGameOver() {
 		fmt.Sprintf("Your score: %d, high score: %d", currentScore, highScore),
 	}
 	for i, line := range lines {
-		y := int32(gameOverTex.Height + uint32((i+1)*14))
+		y := float32(gameOverTex.Height() + (i+1)*14)
 		gskit.FontPrint(
 			gsGlobal, textFont,
 			0, y, 1, 0.95,

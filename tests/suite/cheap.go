@@ -161,22 +161,26 @@ func testGsKitAlloc() error {
 	dmakit.ChannelInit(dmakit.DMA_CHANNEL_GIF)
 
 	gs := gskit.InitGlobal()
-	gs.PSM = gskit.GS_PSM_CT24
-	gs.PSMZ = gskit.GS_PSMZ_16S
-	gs.DoubleBuffering = true
-	gs.ZBuffering = false
-	gs.PrimAlphaEnable = false
+	gs.SetPSM(gskit.GS_PSM_CT24)
+	gs.SetPSMZ(gskit.GS_PSMZ_16S)
+	gs.SetDoubleBuffering(true)
+	gs.SetZBuffering(false)
+	gs.SetPrimAlphaEnable(false)
 	gskit.InitScreen(gs)
+	if gs.PSM() != gskit.GS_PSM_CT24 || !gs.DoubleBuffering() || gs.Width() == 0 {
+		return fmt.Errorf("gsGlobal settings not applied: psm %d db %v %dx%d", gs.PSM(), gs.DoubleBuffering(), gs.Width(), gs.Height())
+	}
 
-	tex := gskit.NewGSTexture()
-	tex.Width, tex.Height, tex.PSM = 256, 256, gskit.GS_PSM_CT32
-	tex.Filter = gskit.GS_FILTER_NEAREST
+	tex := gskit.NewTexture(256, 256, gskit.GS_PSM_CT32, gskit.GS_FILTER_NEAREST)
 	for i := range testTexture {
 		testTexture[i] = byte(i >> 8)
 	}
-	tex.Mem = unsafe.Pointer(&testTexture[0])
-	tex.VRAM = gskit.VRAMAlloc(gs, gskit.TextureSize(tex.Width, tex.Height, tex.PSM), gskit.GSKIT_ALLOC_USERBUFFER)
-	gskit.TextureUpload(gs, tex)
+	if err := tex.Upload(gs, testTexture[:]); err != nil {
+		return err
+	}
+	if tex.VRAM() == 0 {
+		return fmt.Errorf("texture VRAM address is 0")
+	}
 
 	font := gskit.InitFontFromMemory(fonts.Arial)
 	if err := gskit.FontUpload(gs, font); err != nil {

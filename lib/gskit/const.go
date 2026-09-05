@@ -10,6 +10,7 @@ const (
 	GS_FILTER_LINEAR             = 0x01
 	GSKIT_ALLOC_SYSBUFFER        = 0x00
 	GSKIT_ALLOC_USERBUFFER       = 0x01
+	GSKIT_ALLOC_ERROR            = 0x00
 	GSKIT_FTYPE_FNT              = 0x00
 	GS_BLEND_FRONT2BACK          = 0x12
 	GS_BLEND_BACK2FRONT          = 0x01
