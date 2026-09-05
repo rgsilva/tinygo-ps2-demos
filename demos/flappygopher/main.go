@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand/v2"
 	"ps2go/lib/clock"
 	"ps2go/lib/debug"
 	"ps2go/lib/dmakit"
@@ -9,7 +10,6 @@ import (
 	"ps2go/lib/gskit"
 	"ps2go/lib/iop"
 	"ps2go/lib/libpad"
-	"ps2go/lib/random"
 	"ps2go/lib/sifrpc"
 	"unsafe"
 )
@@ -92,10 +92,6 @@ func main() {
 	// Initialize the DMA controller
 	debug.Printf("Initializing DMA\n")
 	initDMA()
-
-	// Initialize random seed.
-	debug.Printf("Initializing random seed\n")
-	random.Init()
 
 	debug.Printf("Initializing controllers\n")
 	initController()
@@ -617,7 +613,7 @@ func initGame() {
 }
 
 func randomPipe(x int32) Pipe {
-	holePos := random.Between(1, PipeSections-1)
+	holePos := 1 + rand.IntN(PipeSections-1)
 	return Pipe{
 		X:         x,
 		HoleStart: int32(holePos - 1),
