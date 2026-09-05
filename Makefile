@@ -23,9 +23,9 @@ PYTHON ?= python3
 V      ?= 0
 
 # ---------------------------------------------------------------------------
-# Demos: each demo is a directory with a Go main package. Assets and IOP
-# modules are embedded from the resources package (go:embed); the IOP modules
-# are copied there from the ps2sdk in the image.
+# Demos: each demo is a directory under demos/ with a Go main package.
+# Assets and IOP modules are embedded (go:embed); the IOP modules are copied
+# from the ps2sdk in the image. `make <name>` builds build/<name>.elf.
 # ---------------------------------------------------------------------------
 
 DEMOS = flappygopher
@@ -46,6 +46,10 @@ LIBC_HEAP ?= 4*1024*1024
 TESTS = tests
 CONTROLS = controls/fail controls/hang controls/crash controls/panic controls/deadlock controls/gopanic \
            controls/stackoverflow
+
+# Source directory of each program (build/<name>.elf comes from ./$(dir_<name>)).
+$(foreach d,$(DEMOS),$(eval dir_$d = demos/$d))
+$(foreach t,$(TESTS) $(CONTROLS),$(eval dir_$t = $t))
 
 # IOP modules embedded by the resources package, taken from the ps2sdk.
 IRX = freesio2 freepad
@@ -100,7 +104,7 @@ $(BUILD)/%.elf: $(GO_SOURCES) $(IRX_FILES) $(MAKEFILES_) | $(BUILD)
 	@echo "  TINYGO  $@"
 	$(Q)mkdir -p $(@D)
 	$(Q)$(TINYGO_ENV) $(TINYGO) build $(TINYGO_FLAGS) $($*_TINYGO_FLAGS) \
-	  -ldflags '-extldflags "-Wl,--defsym=_heap_size=$(or $($*_LIBC_HEAP),$(LIBC_HEAP))"' -o $@ ./$*
+	  -ldflags '-extldflags "-Wl,--defsym=_heap_size=$(or $($*_LIBC_HEAP),$(LIBC_HEAP))"' -o $@ ./$(dir_$*)
 
 # IOP modules from the ps2sdk in the image, for the resources package.
 resources/%.irx:

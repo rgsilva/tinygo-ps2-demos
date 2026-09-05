@@ -34,7 +34,7 @@ or on the command line (`make PS2DEV=... TINYGO=...`). After that:
 * Test suite: `make tests` (see Testing below)
 
 ELFs end up in `build/`. Use `V=1` to see the commands. `PCSX2_DIR` in `config.mk` points at the
-PCSX2 install used by `make check` (default `~/dev/ps2go/tools/pcsx2`). Adding a demo is a directory with a Go main
+PCSX2 install used by `make check` (default `~/dev/ps2go/tools/pcsx2`). Adding a demo is a directory under `demos/` with a Go main
 package plus one line in the `DEMOS` list in the Makefile.
 
 ## Testing
