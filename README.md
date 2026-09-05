@@ -43,7 +43,7 @@ There is a headless test harness that runs ELFs in PCSX2 (real BIOS, Null render
 no display needed). One-time setup, with a PS2 BIOS dump you own:
 
 ```sh
-harness/setup-pcsx2.sh ~/dev/ps2go/tools/pcsx2 /path/to/bios.bin
+tools/pcsx2/setup-pcsx2.sh ~/dev/ps2go/tools/pcsx2 /path/to/bios.bin
 ```
 
 Then:
@@ -59,11 +59,11 @@ Then:
   also boots Flappy Gopher until it prints `Game start` (`--until`), so a hang during init is caught.
 * `make check-gotest` runs Go's own `testing` package on the PS2: `tinygo test -target ps2 ./gotest`
   builds the test binary and runs it in PCSX2 through the harness, which is the target's emulator
-  (`PS2GO_HARNESS` points at `harness/`). A test failure makes `tinygo test` fail.
-* `harness/ps2test.py --probe 2 build/tests.elf` also reads the guest's stats block
+  (`PS2GO_HARNESS` points at `tools/pcsx2/`). A test failure makes `tinygo test` fail.
+* `tools/pcsx2/ps2test.py --probe 2 build/tests.elf` also reads the guest's stats block
   (heap in use, allocations, current case) over PCSX2's PINE socket while it runs.
 
-The guest side is the `harness` package: call `harness.Run` with your cases, and use
+The guest side is the `lib/harness` package: call `harness.Run` with your cases, and use
 `harness.Log` (or plain `println`) for output. Goroutines, channels, timers and recover
 are all covered by the suite.
 

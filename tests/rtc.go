@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"ps2go/harness"
+	"ps2go/lib/harness"
 	"ps2go/lib/rtc"
 )
 

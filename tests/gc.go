@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"runtime"
 
-	"ps2go/harness"
+	"ps2go/lib/harness"
 )
 
 type node struct {

@@ -29,7 +29,7 @@ import "C"
 import (
 	"fmt"
 
-	"ps2go/harness"
+	"ps2go/lib/harness"
 )
 
 func testCgoABI() error {

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"ps2go/harness"
+	"ps2go/lib/harness"
 )
 
 //go:noinline

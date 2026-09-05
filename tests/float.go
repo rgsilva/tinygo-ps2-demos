@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"math"
 
-	"ps2go/harness"
+	"ps2go/lib/harness"
 )
 
 // Inputs live in globals so nothing is folded at compile time.

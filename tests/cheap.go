@@ -34,10 +34,10 @@ import (
 	"runtime"
 	"unsafe"
 
-	"ps2go/harness"
 	"ps2go/lib/dmakit"
 	"ps2go/lib/fonts"
 	"ps2go/lib/gskit"
+	"ps2go/lib/harness"
 )
 
 // A 256x256 CT32 texture for the upload test, filled with a gradient at run

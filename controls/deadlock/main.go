@@ -2,7 +2,7 @@
 // goroutine must be reported as CRASH ("fatal error: ... deadlock").
 package main
 
-import "ps2go/harness"
+import "ps2go/lib/harness"
 
 func main() {
 	harness.Init()

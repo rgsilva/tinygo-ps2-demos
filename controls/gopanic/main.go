@@ -5,7 +5,7 @@ package main
 import (
 	"time"
 
-	"ps2go/harness"
+	"ps2go/lib/harness"
 )
 
 func main() {

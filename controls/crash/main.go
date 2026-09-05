@@ -4,7 +4,7 @@ package main
 import (
 	"unsafe"
 
-	"ps2go/harness"
+	"ps2go/lib/harness"
 )
 
 var unmapped uintptr = 0x30000000 // kuseg address with no TLB mapping on the PS2

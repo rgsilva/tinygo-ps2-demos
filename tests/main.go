@@ -1,7 +1,7 @@
 // The ps2go test suite. Build with `make tests`, run with `make check`.
 package main
 
-import "ps2go/harness"
+import "ps2go/lib/harness"
 
 func main() {
 	cases := []harness.Case{

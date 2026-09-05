@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"unsafe"
 
-	"ps2go/harness"
+	"ps2go/lib/harness"
 	"ps2go/lib/iop"
 	"ps2go/lib/sifrpc"
 )

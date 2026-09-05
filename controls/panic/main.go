@@ -2,7 +2,7 @@
 // as CRASH. The runtime prints "panic: ..." and "runtime: abort".
 package main
 
-import "ps2go/harness"
+import "ps2go/lib/harness"
 
 var m map[string]int
 

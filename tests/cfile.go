@@ -7,7 +7,7 @@ import "C"
 import (
 	"fmt"
 
-	"ps2go/harness"
+	"ps2go/lib/harness"
 )
 
 // testCFile calls a function from a .c file in the package (tests/cfile.c).

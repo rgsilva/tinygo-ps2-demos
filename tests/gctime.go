@@ -12,7 +12,7 @@ import (
 	"runtime"
 	"time"
 
-	"ps2go/harness"
+	"ps2go/lib/harness"
 )
 
 type sweepNode struct {

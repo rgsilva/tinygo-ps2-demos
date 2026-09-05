@@ -1,7 +1,7 @@
 // Negative control: the harness must report TIMEOUT, never PASS.
 package main
 
-import "ps2go/harness"
+import "ps2go/lib/harness"
 
 func main() {
 	harness.Run([]harness.Case{

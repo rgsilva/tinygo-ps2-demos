@@ -6,7 +6,7 @@ package main
 import (
 	"runtime"
 
-	"ps2go/harness"
+	"ps2go/lib/harness"
 )
 
 // How often the recursion yields (a yield is where the runtime checks the

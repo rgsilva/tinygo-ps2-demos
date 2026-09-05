@@ -10,7 +10,7 @@
 #   PS2DEV  ps2dev tree: headers and libraries (a copy extracted from the image)
 #   TINYGO  custom tinygo binary
 #   IMAGE   docker image with the ps2sdk toolchain (pinned tag; keep PS2DEV in sync)
-#   PCSX2_DIR  PCSX2 install for `make check` (see harness/setup-pcsx2.sh)
+#   PCSX2_DIR  PCSX2 install for `make check` (see tools/pcsx2/setup-pcsx2.sh)
 # Use V=1 for verbose output.
 
 -include config.mk
@@ -42,7 +42,7 @@ flappygopher_TINYGO_FLAGS =
 LIBC_HEAP ?= 4*1024*1024
 
 # The test suite (tests/) and the harness's negative controls (controls/*)
-# are built like demos; `make check` runs them in PCSX2 (harness/ps2test.py).
+# are built like demos; `make check` runs them in PCSX2 (tools/pcsx2/ps2test.py).
 TESTS = tests
 CONTROLS = controls/fail controls/hang controls/crash controls/panic controls/deadlock controls/gopanic \
            controls/stackoverflow
@@ -81,7 +81,7 @@ TINYGO_FLAGS = -gc precise -opt 2 -target ps2 $(if $(filter 1,$(V)),-x)
 # and the gcc (wrapper) on PATH.
 TINYGO_ENV = PS2DEV=$(PS2DEV) PS2DEV_IMAGE=$(IMAGE) PATH=$(CURDIR)/tools:$$PATH \
              TINYGOROOT=$$($(TINYGO) env TINYGOROOT) \
-             PS2GO_HARNESS=$(CURDIR)/harness PS2GO_PCSX2_DIR=$(PCSX2_DIR)
+             PS2GO_HARNESS=$(CURDIR)/tools/pcsx2 PS2GO_PCSX2_DIR=$(PCSX2_DIR)
 
 # ---------------------------------------------------------------------------
 # Rules
@@ -113,7 +113,7 @@ lib/iop/%.irx:
 
 # Run the test suite in PCSX2 (headless). TIMEOUT is in seconds.
 TIMEOUT ?= 120
-PS2TEST = PS2GO_PCSX2_DIR=$(PCSX2_DIR) $(PYTHON) harness/ps2test.py --timeout $(TIMEOUT)
+PS2TEST = PS2GO_PCSX2_DIR=$(PCSX2_DIR) $(PYTHON) tools/pcsx2/ps2test.py --timeout $(TIMEOUT)
 check: $(BUILD)/tests.elf
 	$(PS2TEST) $<
 

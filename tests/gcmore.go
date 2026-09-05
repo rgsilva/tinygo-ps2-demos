@@ -17,7 +17,7 @@ import (
 	"runtime"
 	"unsafe"
 
-	"ps2go/harness"
+	"ps2go/lib/harness"
 )
 
 // use keeps an allocation observable without holding it anywhere afterwards

@@ -4,7 +4,7 @@
 Verdicts: PASS, FAIL, TIMEOUT (no result marker before the deadline), CRASH
 (EE exception logged), ERROR (emulator or setup problem).
 
-Setup (once): harness/setup-pcsx2.sh. PCSX2's location is taken from
+Setup (once): tools/pcsx2/setup-pcsx2.sh. PCSX2's location is taken from
 PS2GO_PCSX2_DIR or --pcsx2-dir (default ~/dev/ps2go/tools/pcsx2). That directory
 holds squashfs-root/ (the extracted AppImage) and data/ (ini, bios, logs).
 """

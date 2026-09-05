@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"ps2go/harness"
+	"ps2go/lib/harness"
 )
 
 // testTimer checks the runtime clock: time.Sleep must actually wait and

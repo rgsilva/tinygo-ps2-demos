@@ -1,7 +1,7 @@
 #!/bin/bash
 # One-time setup of PCSX2 for the headless harness.
 #
-#   harness/setup-pcsx2.sh [PCSX2_DIR] [BIOS_FILE]
+#   tools/pcsx2/setup-pcsx2.sh [PCSX2_DIR] [BIOS_FILE]
 #
 # PCSX2_DIR  where to install (default ~/dev/ps2go/tools/pcsx2, or $PS2GO_PCSX2_DIR)
 # BIOS_FILE  a PS2 BIOS dump to copy into the data directory (or $PS2_BIOS).
