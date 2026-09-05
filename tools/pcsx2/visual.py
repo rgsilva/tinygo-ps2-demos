@@ -11,6 +11,7 @@ import re
 import shutil
 import struct
 import time
+import sys
 import zlib
 
 # PCSX2 settings for rendering, on top of the harness ini: the software
@@ -38,12 +39,129 @@ PAD_KEYS = {
 SCREENSHOT_KEY = "F8"  # [Hotkeys] Screenshot
 
 
-def prepare_datadir(pcsx2_dir):
-    """A second PCSX2 data directory for rendering runs: the BIOS and memory
+# PCSX2 settings for network runs: DEV9 ethernet through the "Sockets"
+# backend, which needs no privileges: PCSX2 runs a DHCP server (the guest
+# gets <host subnet>.100, the host adapter's IP as gateway and DNS) and
+# forwards TCP/UDP through host sockets.
+NET_OVERRIDES = {
+    ("DEV9/Eth", "EthEnable"): "true",
+    ("DEV9/Eth", "EthApi"): "Sockets",
+    ("DEV9/Eth", "EthDevice"): "Auto",
+    ("DEV9/Eth", "EthLogDHCP"): "true",
+    ("DEV9/Eth", "EthLogDNS"): "true",
+    # PCSX2 answers the guest's DNS queries itself through the host's
+    # resolver (the host's servers cannot be read behind systemd-resolved).
+    ("DEV9/Eth", "ModeDNS1"): "Internal",
+}
+
+# The guest reaches this machine by this name (a PCSX2 DNS hosts entry).
+HOST_NAME = "host.ps2go"
+ECHO_PORT, HTTP_PORT = 17777, 18080
+
+
+def host_ip():
+    """This machine's address on the interface that reaches the outside
+    (what PCSX2's "Auto" adapter uses); no packet is sent."""
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(("192.0.2.1", 9))
+        return s.getsockname()[0]
+    finally:
+        s.close()
+
+
+def net_overrides():
+    """NET_OVERRIDES plus the hosts entry for this machine."""
+    o = dict(NET_OVERRIDES)
+    o[("DEV9/Eth/Hosts", "Count")] = "1"
+    o[("DEV9/Eth/Hosts/Host0", "Url")] = HOST_NAME
+    o[("DEV9/Eth/Hosts/Host0", "Desc")] = "the harness host"
+    o[("DEV9/Eth/Hosts/Host0", "Address")] = host_ip()
+    o[("DEV9/Eth/Hosts/Host0", "Enabled")] = "true"
+    return o
+
+
+class NetHelpers:
+    """A TCP echo server and an HTTP server on this machine for the guest's
+    network checks; both run in daemon threads."""
+
+    def __init__(self):
+        import http.server
+        import socketserver
+        import threading
+
+        import socket
+
+        class Echo(socketserver.BaseRequestHandler):
+            """Echoes; a first line "CONNECT <port>" instead makes it connect
+            back to the client's address at that port and say hello."""
+            def handle(self):
+                first = True
+                while True:
+                    data = self.request.recv(4096)
+                    if not data:
+                        return
+                    if first and data.startswith(b"CONNECT "):
+                        port = int(data.split()[1])
+                        try:
+                            back = socket.create_connection((self.client_address[0], port), timeout=5)
+                            back.sendall(b"knock knock\n")
+                            back.close()
+                        except OSError:
+                            pass  # expected under PCSX2: no inbound connections
+                        return
+                    first = False
+                    self.request.sendall(data)
+
+        class UDPEcho(socketserver.BaseRequestHandler):
+            def handle(self):
+                data, sock = self.request
+                sock.sendto(data, self.client_address)
+
+        class Page(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):
+                if self.path == "/hello":
+                    body, code = b"hello from the host\n", 200
+                elif self.path == "/large":
+                    body, code = bytes(ord("a") + i % 26 for i in range(200 * 1024)), 200
+                else:
+                    body, code = b"not found\n", 404
+                self.send_response(code)
+                self.send_header("Content-Type", "text/plain")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, *args):
+                pass
+
+        socketserver.TCPServer.allow_reuse_address = True
+        self.servers = [
+            socketserver.ThreadingTCPServer(("0.0.0.0", ECHO_PORT), Echo),
+            socketserver.ThreadingUDPServer(("0.0.0.0", ECHO_PORT), UDPEcho),
+            http.server.ThreadingHTTPServer(("0.0.0.0", HTTP_PORT), Page),
+        ]
+        # The imagestream demo's server (tools/imageserver.py), on its port.
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+        import imageserver
+        self.servers.append(imageserver.Server(("0.0.0.0", 9001), imageserver.Handler))
+        for srv in self.servers:
+            threading.Thread(target=srv.serve_forever, daemon=True).start()
+
+    def stop(self):
+        for srv in self.servers:
+            srv.shutdown()
+            srv.server_close()
+
+
+def prepare_datadir(pcsx2_dir, name, overrides):
+    """A second PCSX2 data directory (data-<name>): the BIOS and memory
     cards of the harness one (linked, never copied), its ini with the
-    rendering overrides. Refreshed on every run. Returns its path."""
+    overrides {(section, key): value}. Refreshed on every run. Returns its
+    path."""
     src = os.path.join(pcsx2_dir, "data")
-    dst = os.path.join(pcsx2_dir, "data-visual")
+    dst = os.path.join(pcsx2_dir, "data-" + name)
     for sub in ("inis", "snaps", "logs", "cache"):
         os.makedirs(os.path.join(dst, "PCSX2", sub), exist_ok=True)
     for sub in ("bios", "memcards", "resources"):
@@ -55,7 +173,7 @@ def prepare_datadir(pcsx2_dir):
     out, section, done = [], None, set()
 
     def flush(sec):
-        for (s, k), v in INI_OVERRIDES.items():
+        for (s, k), v in overrides.items():
             if s == sec and (s, k) not in done:
                 out.append(f"{k} = {v}")
                 done.add((s, k))
@@ -68,13 +186,13 @@ def prepare_datadir(pcsx2_dir):
             out.append(line)
             continue
         m = re.match(r"\s*([\w/]+)\s*=", line)
-        if m and (section, m.group(1)) in INI_OVERRIDES:
-            out.append(f"{m.group(1)} = {INI_OVERRIDES[(section, m.group(1))]}")
+        if m and (section, m.group(1)) in overrides:
+            out.append(f"{m.group(1)} = {overrides[(section, m.group(1))]}")
             done.add((section, m.group(1)))
         else:
             out.append(line)
     flush(section)
-    for s in {s for s, _ in INI_OVERRIDES} - {s for s, _ in done}:
+    for s in {s for s, _ in overrides} - {s for s, _ in done}:
         out.append(f"\n[{s}]")
         flush(s)
     with open(os.path.join(dst, "PCSX2", "inis", "PCSX2.ini"), "w") as f:

@@ -278,6 +278,8 @@ def main():
     ap.add_argument("--update", action="store_true", help="with --visual: write the reference images instead of comparing")
     ap.add_argument("--refs", metavar="DIR", help="with --visual: reference images directory (default: the steps file's)")
     ap.add_argument("--shots-dir", metavar="DIR", help="with --visual: where the screenshots go (default: <elf dir>/visual)")
+    ap.add_argument("--net", action="store_true",
+                    help="enable the emulated ethernet (DEV9, PCSX2's Sockets backend: DHCP, TCP/UDP through the host)")
     ap.add_argument("--pine-slot", type=int, default=28011, help="PINE slot of the PCSX2 instance (default 28011)")
     ap.add_argument("-q", "--quiet", action="store_true", help="only print the verdict line")
     args = ap.parse_args()
@@ -315,8 +317,22 @@ def main():
     biosdir = os.path.join(datadir, "PCSX2", "bios")
     if not os.path.isdir(biosdir) or not os.listdir(biosdir):
         return finish("ERROR", f"no BIOS in {biosdir}")
-    if steps is not None:
-        datadir = visual.prepare_datadir(args.pcsx2_dir)
+    if steps is not None or args.net:
+        import visual
+        name, overrides = [], {}
+        if steps is not None:
+            name.append("visual")
+            overrides.update(visual.INI_OVERRIDES)
+        if args.net:
+            name.append("net")
+            overrides.update(visual.net_overrides())
+        datadir = visual.prepare_datadir(args.pcsx2_dir, "-".join(name), overrides)
+    helpers = None
+    if args.net:
+        try:
+            helpers = visual.NetHelpers()
+        except OSError as e:
+            return finish("ERROR", f"net helpers: {e}")
 
     try:
         block_addr = elf_symbol(elf, BLOCK_SYMBOL)
@@ -427,6 +443,8 @@ def main():
             pine.close()
         stop(proc)
         stop(xvfb, 2)
+        if helpers:
+            helpers.stop()
         if not args.log and os.path.exists(log) and verdict in ("PASS", None):
             os.remove(log)
     elapsed = time.time() - t0
