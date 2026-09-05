@@ -1,5 +1,5 @@
 // The console's real-time clock, through the CD/DVD driver on the IOP
-// (libcdvd). In C because sifrpc.h does not parse under cgo.
+// (libcdvd).
 #define _EE
 #include <kernel.h>
 #include <sifrpc.h>
