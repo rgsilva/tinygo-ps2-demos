@@ -99,3 +99,12 @@ func (p *Pad) Read() (r ReadResult, ok bool) {
 	r.Select = btns&PAD_SELECT == 0
 	return r, true
 }
+
+// Close closes the port and frees the pad's buffers.
+func (p *Pad) Close() {
+	C.padPortClose(C.int(p.port), C.int(p.slot))
+	C.free(p.buf)
+	C.free(unsafe.Pointer(p.status))
+	p.buf = nil
+	p.status = nil
+}
