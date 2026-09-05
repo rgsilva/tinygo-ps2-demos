@@ -3,7 +3,7 @@ package main
 import _ "embed"
 
 // Textures (raw pixel data), 16-byte aligned because the GS reads them by
-// DMA. The PNGs next to them are the sources.
+// DMA. Made from the PNGs next to them by tools/png2raw.py (make).
 var (
 	//go:align 16
 	//go:embed assets/gopher.raw

@@ -55,6 +55,8 @@ dir_tests = tests/suite
 # IOP modules embedded by the iop package, taken from the ps2sdk.
 IRX = freesio2 freepad
 IRX_FILES = $(addprefix lib/iop/,$(addsuffix .irx,$(IRX)))
+# Raw GS textures made from the demos' PNGs (rule below).
+RAW_FILES = $(patsubst %.png,%.raw,$(wildcard demos/*/assets/*.png))
 
 # ---------------------------------------------------------------------------
 # Tools and flags
@@ -101,11 +103,19 @@ $(BUILD):
 # Demos import the shared packages, so depend on all Go sources (and on the
 # embedded IOP modules).
 GO_SOURCES := $(shell find . -name '*.go' -not -path './$(BUILD)/*')
-$(BUILD)/%.elf: $(GO_SOURCES) $(IRX_FILES) $(MAKEFILES_) | $(BUILD)
+$(BUILD)/%.elf: $(GO_SOURCES) $(IRX_FILES) $(RAW_FILES) $(MAKEFILES_) | $(BUILD)
 	@echo "  TINYGO  $@"
 	$(Q)mkdir -p $(@D)
 	$(Q)$(TINYGO_ENV) $(TINYGO) build $(TINYGO_FLAGS) $($*_TINYGO_FLAGS) \
 	  -ldflags '-extldflags "-Wl,--defsym=_heap_size=$(or $($*_LIBC_HEAP),$(LIBC_HEAP))"' -o $@ ./$(dir_$*)
+
+# Raw GS textures (CT32, alpha 0..0x80) from the PNGs next to them. They
+# are tracked in git; the rule keeps them current (and make must not
+# delete them as intermediates).
+.SECONDARY: $(RAW_FILES)
+%.raw: %.png tools/png2raw.py
+	@echo "  PNG2RAW $@"
+	$(Q)$(PYTHON) tools/png2raw.py $< $@
 
 # IOP modules from the ps2sdk in the image, for the iop package.
 lib/iop/%.irx:
