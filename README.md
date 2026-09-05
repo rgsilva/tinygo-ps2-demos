@@ -48,16 +48,16 @@ tools/pcsx2/setup-pcsx2.sh ~/dev/ps2go/tools/pcsx2 /path/to/bios.bin
 
 Then:
 
-* `make check` builds `tests/` and runs it: each case prints `PS2GO-CASE <name> PASS|FAIL`
+* `make check` builds `tests/suite/` and runs it: each case prints `PS2GO-CASE <name> PASS|FAIL`
   on the EE serial port, which ends up in PCSX2's log, and the run ends with `PS2GO-RESULT`.
   Cases known to fail on the current runtime are marked `XFail` and reported as `XFAIL`.
-* `make check-harness` proves the harness itself with the negative controls in `controls/` (a failing
+* `make check-harness` proves the harness itself with the negative controls in `tests/controls/` (a failing
   case, a hang, a crash, panics, a deadlock, a goroutine stack overflow)
   (a failing case, a hang, an unmapped memory access, an unrecovered panic) which must produce FAIL,
   TIMEOUT, CRASH and CRASH.
 * `make run-<demo>` runs any ELF for `TIMEOUT` seconds and streams its serial output. `check-harness`
   also boots Flappy Gopher until it prints `Game start` (`--until`), so a hang during init is caught.
-* `make check-gotest` runs Go's own `testing` package on the PS2: `tinygo test -target ps2 ./gotest`
+* `make check-gotest` runs Go's own `testing` package on the PS2: `tinygo test -target ps2 ./tests/gotest`
   builds the test binary and runs it in PCSX2 through the harness, which is the target's emulator
   (`PS2GO_HARNESS` points at `tools/pcsx2/`). A test failure makes `tinygo test` fail.
 * `tools/pcsx2/ps2test.py --probe 2 build/tests.elf` also reads the guest's stats block

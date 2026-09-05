@@ -41,15 +41,16 @@ flappygopher_TINYGO_FLAGS =
 # program with <name>_LIBC_HEAP.
 LIBC_HEAP ?= 4*1024*1024
 
-# The test suite (tests/) and the harness's negative controls (controls/*)
-# are built like demos; `make check` runs them in PCSX2 (tools/pcsx2/ps2test.py).
+# The test suite (tests/suite) and the harness's negative controls
+# (tests/controls/*) are built like demos; `make check` runs them in PCSX2
+# (tools/pcsx2/ps2test.py).
 TESTS = tests
-CONTROLS = controls/fail controls/hang controls/crash controls/panic controls/deadlock controls/gopanic \
-           controls/stackoverflow
+CONTROLS = fail hang crash panic deadlock gopanic stackoverflow
 
 # Source directory of each program (build/<name>.elf comes from ./$(dir_<name>)).
 $(foreach d,$(DEMOS),$(eval dir_$d = demos/$d))
-$(foreach t,$(TESTS) $(CONTROLS),$(eval dir_$t = $t))
+$(foreach c,$(CONTROLS),$(eval dir_$c = tests/controls/$c))
+dir_tests = tests/suite
 
 # IOP modules embedded by the iop package, taken from the ps2sdk.
 IRX = freesio2 freepad
@@ -119,13 +120,13 @@ check: $(BUILD)/tests.elf
 
 # Prove the harness itself: each control must produce its verdict.
 check-harness: $(patsubst %,$(BUILD)/%.elf,$(CONTROLS)) $(BUILD)/tests.elf $(BUILD)/flappygopher.elf
-	$(PS2TEST) --expect FAIL    $(BUILD)/controls/fail.elf
-	$(PS2TEST) --expect TIMEOUT --timeout 20 $(BUILD)/controls/hang.elf
-	$(PS2TEST) --expect CRASH   $(BUILD)/controls/crash.elf
-	$(PS2TEST) --expect CRASH   $(BUILD)/controls/panic.elf
-	$(PS2TEST) --expect CRASH   $(BUILD)/controls/deadlock.elf
-	$(PS2TEST) --expect CRASH   $(BUILD)/controls/gopanic.elf
-	$(PS2TEST) --expect CRASH --detail 'goroutine stack overflow' $(BUILD)/controls/stackoverflow.elf
+	$(PS2TEST) --expect FAIL    $(BUILD)/fail.elf
+	$(PS2TEST) --expect TIMEOUT --timeout 20 $(BUILD)/hang.elf
+	$(PS2TEST) --expect CRASH   $(BUILD)/crash.elf
+	$(PS2TEST) --expect CRASH   $(BUILD)/panic.elf
+	$(PS2TEST) --expect CRASH   $(BUILD)/deadlock.elf
+	$(PS2TEST) --expect CRASH   $(BUILD)/gopanic.elf
+	$(PS2TEST) --expect CRASH --detail 'goroutine stack overflow' $(BUILD)/stackoverflow.elf
 	$(PS2TEST) --expect PASS    $(BUILD)/tests.elf
 	$(PS2TEST) --until 'Game start' --timeout 30 $(BUILD)/flappygopher.elf
 
@@ -133,8 +134,8 @@ check-harness: $(patsubst %,$(BUILD)/%.elf,$(CONTROLS)) $(BUILD)/tests.elf $(BUI
 # and runs it in PCSX2 through the harness (the target's emulator). The
 # second run must fail (it includes a failing test).
 check-gotest:
-	$(TINYGO_ENV) $(TINYGO) test $(TINYGO_FLAGS) ./gotest
-	! $(TINYGO_ENV) $(TINYGO) test $(TINYGO_FLAGS) -tags ps2fail ./gotest
+	$(TINYGO_ENV) $(TINYGO) test $(TINYGO_FLAGS) ./tests/gotest
+	! $(TINYGO_ENV) $(TINYGO) test $(TINYGO_FLAGS) -tags ps2fail ./tests/gotest
 
 # Run any ELF for TIMEOUT seconds and stream its serial output.
 run-%: $(BUILD)/%.elf
