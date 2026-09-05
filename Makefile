@@ -44,13 +44,14 @@ LIBC_HEAP ?= 4*1024*1024
 # The test suite (tests/suite) and the harness's negative controls
 # (tests/controls/*) are built like demos; `make check` runs them in PCSX2
 # (tools/pcsx2/ps2test.py).
-TESTS = tests
+TESTS = tests net
 CONTROLS = fail hang crash panic deadlock gopanic stackoverflow
 
 # Source directory of each program (build/<name>.elf comes from ./$(dir_<name>)).
 $(foreach d,$(DEMOS),$(eval dir_$d = demos/$d))
 $(foreach c,$(CONTROLS),$(eval dir_$c = tests/controls/$c))
 dir_tests = tests/suite
+dir_net = tests/net
 
 # IOP modules embedded by the iop package, taken from the ps2sdk.
 IRX = freesio2 freepad ps2dev9 netman smap ps2ip-nm ps2ip ps2ips
@@ -90,7 +91,7 @@ TINYGO_ENV = PS2DEV=$(PS2DEV) PS2DEV_IMAGE=$(IMAGE) PATH=$(CURDIR)/tools:$$PATH 
 # Rules
 # ---------------------------------------------------------------------------
 
-.PHONY: all $(DEMOS) $(TESTS) $(CONTROLS) check check-harness check-gotest check-visual visual-refs shell clean
+.PHONY: all $(DEMOS) $(TESTS) $(CONTROLS) check check-net check-harness check-gotest check-visual visual-refs shell clean
 .DELETE_ON_ERROR:
 
 all: $(DEMOS) $(TESTS)
@@ -127,6 +128,10 @@ TIMEOUT ?= 120
 PS2TEST = PS2GO_PCSX2_DIR=$(PCSX2_DIR) $(PYTHON) tools/pcsx2/ps2test.py --timeout $(TIMEOUT)
 check: $(BUILD)/tests.elf
 	$(PS2TEST) $<
+
+# Network checks in PCSX2 with the emulated ethernet (DEV9, Sockets backend).
+check-net: $(BUILD)/net.elf
+	$(PS2TEST) --net $<
 
 # Prove the harness itself: each control must produce its verdict.
 check-harness: $(patsubst %,$(BUILD)/%.elf,$(CONTROLS)) $(BUILD)/tests.elf $(BUILD)/flappygopher.elf
