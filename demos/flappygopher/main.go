@@ -59,7 +59,7 @@ var (
 	gameOverTex           gskit.GSTexture
 	skyTex                gskit.GSTexture
 	textFont              gskit.GSFont
-	pad0                  libpad.Pad
+	pad0                  *libpad.Pad
 	debounceCounter       int32
 	debounceCounterTarget int32
 	lastFrameTime         int32
@@ -166,11 +166,11 @@ func drawFPS() {
 }
 
 func initController() {
-	// Initialize the controller
-	libpad.Init()
+	must(libpad.Init())
 
-	// Open port
-	pad0 = libpad.PortOpen(libpad.PORT_0, libpad.SLOT_0)
+	var err error
+	pad0, err = libpad.PortOpen(libpad.PORT_0, libpad.SLOT_0)
+	must(err)
 }
 
 func initDMA() {
@@ -569,7 +569,10 @@ func drawGameOver() {
 }
 
 func handleInputs() {
-	input := pad0.Read()
+	input, ok := pad0.Read()
+	if !ok {
+		return
+	}
 
 	if gameState == Menu {
 		if input.Start {
