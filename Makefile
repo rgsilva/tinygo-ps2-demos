@@ -51,9 +51,9 @@ CONTROLS = controls/fail controls/hang controls/crash controls/panic controls/de
 $(foreach d,$(DEMOS),$(eval dir_$d = demos/$d))
 $(foreach t,$(TESTS) $(CONTROLS),$(eval dir_$t = $t))
 
-# IOP modules embedded by the resources package, taken from the ps2sdk.
+# IOP modules embedded by the iop package, taken from the ps2sdk.
 IRX = freesio2 freepad
-IRX_FILES = $(addprefix resources/,$(addsuffix .irx,$(IRX)))
+IRX_FILES = $(addprefix lib/iop/,$(addsuffix .irx,$(IRX)))
 
 # ---------------------------------------------------------------------------
 # Tools and flags
@@ -106,8 +106,8 @@ $(BUILD)/%.elf: $(GO_SOURCES) $(IRX_FILES) $(MAKEFILES_) | $(BUILD)
 	$(Q)$(TINYGO_ENV) $(TINYGO) build $(TINYGO_FLAGS) $($*_TINYGO_FLAGS) \
 	  -ldflags '-extldflags "-Wl,--defsym=_heap_size=$(or $($*_LIBC_HEAP),$(LIBC_HEAP))"' -o $@ ./$(dir_$*)
 
-# IOP modules from the ps2sdk in the image, for the resources package.
-resources/%.irx:
+# IOP modules from the ps2sdk in the image, for the iop package.
+lib/iop/%.irx:
 	@echo "  IRX     $@"
 	$(Q)$(DOCKER) cp $(PS2SDK_IMG)/iop/irx/$*.irx $@
 

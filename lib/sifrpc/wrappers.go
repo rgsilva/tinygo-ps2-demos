@@ -54,7 +54,7 @@ func LoadModule(path string) (int, error) {
 
 // LoadModuleBuffer loads an IRX module from EE memory and returns its module
 // id. The data is read by DMA, so it must be 16-byte aligned (embedded
-// modules are, see the resources package).
+// modules are, see the iop package).
 func LoadModuleBuffer(data []byte) (int, error) {
 	if len(data) == 0 {
 		return -1, fmt.Errorf("sifrpc: empty module")

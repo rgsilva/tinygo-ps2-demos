@@ -5,11 +5,12 @@ import (
 	"ps2go/lib/clock"
 	"ps2go/lib/debug"
 	"ps2go/lib/dmakit"
+	"ps2go/lib/fonts"
 	"ps2go/lib/gskit"
+	"ps2go/lib/iop"
 	"ps2go/lib/libpad"
 	"ps2go/lib/random"
 	"ps2go/lib/sifrpc"
-	"ps2go/resources"
 	"unsafe"
 )
 
@@ -81,11 +82,11 @@ func main() {
 
 	// Load the IOP modules the controller needs.
 	debug.Printf("Loading freesio2\n")
-	_, err := sifrpc.LoadModuleBuffer(resources.Freesio2)
+	_, err := sifrpc.LoadModuleBuffer(iop.Freesio2)
 	must(err)
 
 	debug.Printf("Loading freepad\n")
-	_, err = sifrpc.LoadModuleBuffer(resources.Freepad)
+	_, err = sifrpc.LoadModuleBuffer(iop.Freepad)
 	must(err)
 
 	// Initialize the DMA controller
@@ -218,7 +219,7 @@ func loadGopherTexture() {
 	gopherTex.Clut = nil
 
 	// Point to our texture data (EE RAM)
-	gopherTex.Mem = unsafe.Pointer(&resources.Gopher[0])
+	gopherTex.Mem = unsafe.Pointer(&texGopher[0])
 
 	// Allocate the VRAM on GS (GS RAM)
 	textureSize := gskit.TextureSize(gopherTex.Width, gopherTex.Height, gopherTex.PSM)
@@ -243,7 +244,7 @@ func loadBirdTexture() {
 	birdTex.Clut = nil
 
 	// Point to our texture data (EE RAM)
-	birdTex.Mem = unsafe.Pointer(&resources.Bird[0])
+	birdTex.Mem = unsafe.Pointer(&texBird[0])
 
 	// Allocate the VRAM on GS (GS RAM)
 	textureSize := gskit.TextureSize(birdTex.Width, birdTex.Height, birdTex.PSM)
@@ -268,7 +269,7 @@ func loadPipeTexture() {
 	pipeTex.Clut = nil
 
 	// Point to our texture data (EE RAM)
-	pipeTex.Mem = unsafe.Pointer(&resources.Pipe[0])
+	pipeTex.Mem = unsafe.Pointer(&texPipe[0])
 
 	// Allocate the VRAM on GS (GS RAM)
 	textureSize := gskit.TextureSize(pipeTex.Width, pipeTex.Height, pipeTex.PSM)
@@ -293,7 +294,7 @@ func loadGameOverTexture() {
 	gameOverTex.Clut = nil
 
 	// Point to our texture data (EE RAM)
-	gameOverTex.Mem = unsafe.Pointer(&resources.Gameover[0])
+	gameOverTex.Mem = unsafe.Pointer(&texGameover[0])
 
 	// Allocate the VRAM on GS (GS RAM)
 	textureSize := gskit.TextureSize(gameOverTex.Width, gameOverTex.Height, gameOverTex.PSM)
@@ -318,7 +319,7 @@ func loadSkyTexture() {
 	skyTex.Clut = nil
 
 	// Point to our texture data (EE RAM)
-	skyTex.Mem = unsafe.Pointer(&resources.Sky[0])
+	skyTex.Mem = unsafe.Pointer(&texSky[0])
 
 	// Allocate the VRAM on GS (GS RAM)
 	textureSize := gskit.TextureSize(skyTex.Width, skyTex.Height, skyTex.PSM)
@@ -329,7 +330,7 @@ func loadSkyTexture() {
 }
 
 func loadFont() {
-	textFont = gskit.InitFontFromMemory(unsafe.Pointer(&resources.Arial[0]), len(resources.Arial))
+	textFont = gskit.InitFontFromMemory(unsafe.Pointer(&fonts.Arial[0]), len(fonts.Arial))
 	gskit.FontUpload(gsGlobal, textFont)
 }
 

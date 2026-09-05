@@ -36,9 +36,15 @@ import (
 
 	"ps2go/harness"
 	"ps2go/lib/dmakit"
+	"ps2go/lib/fonts"
 	"ps2go/lib/gskit"
-	"ps2go/resources"
 )
+
+// A 256x256 CT32 texture for the upload test, filled with a gradient at run
+// time; 16-byte aligned because the GS reads it by DMA.
+//
+//go:align 16
+var testTexture [256 * 256 * 4]byte
 
 // The kernel keeps the top page of RAM and puts the EE stack below it.
 const stackTop = 0x02000000 - 0x1000
@@ -165,11 +171,14 @@ func testGsKitAlloc() error {
 	tex := gskit.NewGSTexture()
 	tex.Width, tex.Height, tex.PSM = 256, 256, gskit.GS_PSM_CT32
 	tex.Filter = gskit.GS_FILTER_NEAREST
-	tex.Mem = unsafe.Pointer(&resources.Gopher[0])
+	for i := range testTexture {
+		testTexture[i] = byte(i >> 8)
+	}
+	tex.Mem = unsafe.Pointer(&testTexture[0])
 	tex.VRAM = gskit.VRAMAlloc(gs, gskit.TextureSize(tex.Width, tex.Height, tex.PSM), gskit.GSKIT_ALLOC_USERBUFFER)
 	gskit.TextureUpload(gs, tex)
 
-	font := gskit.InitFontFromMemory(unsafe.Pointer(&resources.Arial[0]), len(resources.Arial))
+	font := gskit.InitFontFromMemory(unsafe.Pointer(&fonts.Arial[0]), len(fonts.Arial))
 	gskit.FontUpload(gs, font)
 
 	brk1 := libcBreak()

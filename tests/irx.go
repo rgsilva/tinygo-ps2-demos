@@ -8,15 +8,15 @@ import (
 	"unsafe"
 
 	"ps2go/harness"
+	"ps2go/lib/iop"
 	"ps2go/lib/sifrpc"
-	"ps2go/resources"
 )
 
 func testIRX() error {
 	for _, m := range []struct {
 		name string
 		data []byte
-	}{{"freesio2", resources.Freesio2}, {"freepad", resources.Freepad}} {
+	}{{"freesio2", iop.Freesio2}, {"freepad", iop.Freepad}} {
 		if len(m.data) == 0 || uintptr(unsafe.Pointer(&m.data[0]))%16 != 0 {
 			return fmt.Errorf("%s: %d bytes at %#x", m.name, len(m.data), uintptr(unsafe.Pointer(&m.data[0])))
 		}
@@ -27,7 +27,7 @@ func testIRX() error {
 	for _, m := range []struct {
 		name string
 		data []byte
-	}{{"freesio2", resources.Freesio2}, {"freepad", resources.Freepad}} {
+	}{{"freesio2", iop.Freesio2}, {"freepad", iop.Freepad}} {
 		id, err := sifrpc.LoadModuleBuffer(m.data)
 		if err != nil {
 			return err
@@ -35,7 +35,7 @@ func testIRX() error {
 		harness.Logf("irx: %s (%d bytes) loaded as module %d", m.name, len(m.data), id)
 	}
 	// An unaligned buffer must be refused before it reaches the DMA.
-	if _, err := sifrpc.LoadModuleBuffer(resources.Freepad[1:]); err == nil {
+	if _, err := sifrpc.LoadModuleBuffer(iop.Freepad[1:]); err == nil {
 		return fmt.Errorf("unaligned module data was accepted")
 	}
 	return nil
