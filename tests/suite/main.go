@@ -28,6 +28,7 @@ func main() {
 		{Name: "math-rand", Fn: testMathRand},
 		{Name: "memory-layout", Fn: testMemoryLayout},
 		{Name: "libc-heap-cap", Fn: testLibcHeapCap},
+		{Name: "gs-layout", Fn: testGsLayout},
 		{Name: "gs-registers", Fn: testGsRegisters},
 		{Name: "gskit-alloc", Fn: testGsKitAlloc},
 		{Name: "gc-stress", Fn: testGCStress},
