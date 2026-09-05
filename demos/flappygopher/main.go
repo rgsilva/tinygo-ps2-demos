@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"math/rand/v2"
-	"ps2go/lib/clock"
 	"ps2go/lib/debug"
 	"ps2go/lib/dmakit"
 	"ps2go/lib/fonts"
@@ -11,6 +10,7 @@ import (
 	"ps2go/lib/iop"
 	"ps2go/lib/libpad"
 	"ps2go/lib/sifrpc"
+	"time"
 	"unsafe"
 )
 
@@ -62,7 +62,7 @@ var (
 	pad0                  *libpad.Pad
 	debounceCounter       int32
 	debounceCounterTarget int32
-	lastFrameTime         int32
+	lastFrameTime         time.Duration
 
 	// Game stuff
 	gameState    GameState
@@ -126,7 +126,7 @@ func main() {
 
 	debug.Printf("Game start\n")
 	for {
-		start := clock.Now()
+		start := time.Now()
 
 		// Handle all the inputs.
 		handleInputs()
@@ -147,15 +147,14 @@ func main() {
 			}
 		}
 
-		end := clock.Now()
-		lastFrameTime = int32(end - start)
+		lastFrameTime = time.Since(start)
 	}
 }
 
 func drawFPS() {
-	fps := int32(0)
+	fps := time.Duration(0)
 	if lastFrameTime > 0 {
-		fps = clock.CLOCKS_PER_SEC / lastFrameTime
+		fps = time.Second / lastFrameTime
 	}
 	line := fmt.Sprintf("FPS: %d", fps)
 	gskit.FontPrint(

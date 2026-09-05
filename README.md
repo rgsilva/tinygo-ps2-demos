@@ -11,7 +11,7 @@ This is a hobby project and I'm not a game developer. This project was created f
 
 * `demos/` — the programs, one directory each (`demos/flappygopher`).
 * `lib/` — Go packages: cgo bindings to the ps2sdk libraries (`gskit`, `dmakit`, `libpad`,
-  `sifrpc`, `rtc`, `clock`, `debug`), the embedded IOP modules (`iop`), a gsKit font
+  `sifrpc`, `rtc`, `debug`), the embedded IOP modules (`iop`), a gsKit font
   (`fonts`) and the guest side of the test harness (`harness`).
 * `tests/` — the harness suite (`suite`), the negative controls (`controls/*`) and the
   `tinygo test` example (`gotest`).
