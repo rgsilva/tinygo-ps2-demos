@@ -7,6 +7,15 @@ Verdicts: PASS, FAIL, TIMEOUT (no result marker before the deadline), CRASH
 Setup (once): tools/pcsx2/setup-pcsx2.sh. PCSX2's location is taken from
 PS2GO_PCSX2_DIR or --pcsx2-dir (default ~/dev/ps2go/tools/pcsx2). That directory
 holds squashfs-root/ (the extracted AppImage) and data/ (ini, bios, logs).
+
+Visual mode (--visual STEPS, --screenshot PATH) renders with PCSX2's software
+renderer (see visual.py) and follows a steps file: `until TEXT` waits for a
+guest output line, `sleep SECS`, `pad BUTTON [HOLD]` presses a controller
+button (start, cross, ...), `key KEYSYM [HOLD]` any key, `shot NAME [TOL]`
+takes a screenshot and compares it with the reference NAME.png next to the
+steps file (--update writes the references instead). The verdict is FAIL when
+a screenshot is blank or differs from its reference by more than TOL percent
+of 16x16 cells.
 """
 import argparse
 import os
@@ -137,6 +146,117 @@ def stop(proc, grace=10.0):
         proc.wait()
 
 
+class Steps:
+    """Runs a visual steps file against the emulator (see visual.py)."""
+
+    def __init__(self, steps, display, snaps, shots_dir, refs, update, say):
+        import visual
+        self.v = visual
+        self.steps = steps
+        self.kb = visual.Keyboard(display)
+        self.snaps, self.shots_dir, self.refs, self.update, self.say = snaps, shots_dir, refs, update, say
+        self.i = 0
+        self.deadline = None
+        self.failures = []
+        self.shots = 0
+        self.known = set(os.listdir(snaps))
+
+    def where(self):
+        if self.i >= len(self.steps):
+            return "end"
+        op, args = self.steps[self.i]
+        return f"{self.i + 1} ({op} {' '.join(args)})"
+
+    def done(self):
+        return self.i >= len(self.steps)
+
+    def verdict(self):
+        if self.failures:
+            return "FAIL", "; ".join(self.failures)
+        return "PASS", f"{self.shots} screenshot(s) {'written' if self.update or self.refs is None else 'match'}"
+
+    def feed(self, text):
+        """A guest output line: completes a pending `until`."""
+        if not self.done() and self.steps[self.i][0] == "until" and self.steps[self.i][1][0] in text:
+            self.say(f"  until {self.steps[self.i][1][0]!r}: {text.strip()}")
+            self.i += 1
+
+    def tick(self, now):
+        """Runs the steps that do not wait for output."""
+        while not self.done():
+            op, args = self.steps[self.i]
+            if op == "until":
+                return
+            if op == "sleep":
+                if self.deadline is None:
+                    self.deadline = now + float(args[0])
+                if time.time() < self.deadline:
+                    return
+                self.deadline = None
+            elif op in ("pad", "key"):
+                self.press(self.v.PAD_KEYS[args[0]] if op == "pad" else args[0], float(args[1]) if len(args) > 1 else 0.1)
+                self.say(f"  {op} {args[0]}")
+            elif op == "shot":
+                self.shot(args[0], float(args[1]) if len(args) > 1 else self.v.DEFAULT_TOLERANCE)
+            self.i += 1
+
+    def press(self, keysym, hold=0.1):
+        others = self.kb.focus_display()
+        if others is None:
+            raise RuntimeError("no PCSX2 window on the display")
+        for name in others:
+            # A dialog (an emulator error) would take the keys: close it.
+            self.say(f"  note: closing PCSX2 dialog {name!r}")
+            self.kb.dismiss(name)
+            self.kb.focus_display()
+        self.kb.press(keysym, hold)
+
+    def shot(self, name, tolerance):
+        self.press(self.v.SCREENSHOT_KEY)
+        path = None
+        deadline = time.time() + 5
+        while time.time() < deadline and path is None:
+            path = self.v.newest_png(self.snaps, self.known)
+            time.sleep(0.1)
+        if path is None:
+            self.failures.append(f"{name}: PCSX2 saved no screenshot")
+            return
+        # PCSX2 writes the file after logging it: wait for the size to settle.
+        size = -1
+        while os.path.getsize(path) != size:
+            size = os.path.getsize(path)
+            time.sleep(0.2)
+        if os.sep in name or name.endswith(".png"):
+            dst = name if name.endswith(".png") else name + ".png"
+        else:
+            dst = os.path.join(self.shots_dir, name + ".png")
+        self.v.move(path, dst)
+        self.shots += 1
+        w, h, rows = self.v.read_png(dst)
+        if self.v.blank(w, h, rows):
+            self.failures.append(f"{name}: blank screenshot ({dst})")
+            return
+        if self.refs is None or os.sep in name or name.endswith(".png"):
+            self.say(f"  shot {dst} ({w}x{h})")
+            return
+        ref = os.path.join(self.refs, name + ".png")
+        if self.update:
+            self.v.write_png(ref, w, h, rows)
+            self.say(f"  shot {name}: reference written to {ref}")
+            return
+        if not os.path.exists(ref):
+            self.failures.append(f"{name}: no reference {ref} (run with --update)")
+            return
+        diff = dst[:-4] + ".diff.png"
+        pct, _, detail = self.v.compare((w, h, rows), self.v.read_png(ref), diff)
+        if pct > tolerance:
+            self.failures.append(f"{name}: {detail}, tolerance {tolerance:g}% (see {dst}, {diff})")
+            self.say(f"  shot {name}: DIFFERENT {detail}")
+        else:
+            os.remove(diff)
+            self.say(f"  shot {name}: matches ({detail})")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("elf")
@@ -153,6 +273,11 @@ def main():
     ap.add_argument("--pcsx2-dir", default=os.environ.get("PS2GO_PCSX2_DIR", DEFAULT_DIR))
     ap.add_argument("--log", help="keep the PCSX2 log at this path")
     ap.add_argument("--probe", type=float, default=0, metavar="SECS", help="print the guest stats block every SECS")
+    ap.add_argument("--visual", metavar="STEPS", help="render (software renderer) and follow this steps file, comparing screenshots")
+    ap.add_argument("--screenshot", metavar="PNG", help="render and save one screenshot to PNG (after --until TEXT, or 3 seconds)")
+    ap.add_argument("--update", action="store_true", help="with --visual: write the reference images instead of comparing")
+    ap.add_argument("--refs", metavar="DIR", help="with --visual: reference images directory (default: the steps file's)")
+    ap.add_argument("--shots-dir", metavar="DIR", help="with --visual: where the screenshots go (default: <elf dir>/visual)")
     ap.add_argument("--pine-slot", type=int, default=28011, help="PINE slot of the PCSX2 instance (default 28011)")
     ap.add_argument("-q", "--quiet", action="store_true", help="only print the verdict line")
     args = ap.parse_args()
@@ -161,6 +286,14 @@ def main():
     binary = os.path.join(args.pcsx2_dir, "squashfs-root", "usr", "bin", "pcsx2-qt")
     datadir = os.path.join(args.pcsx2_dir, "data")
     log = os.path.abspath(args.log or f"/tmp/ps2test-{os.getpid()}.log")
+    steps = None
+    if args.visual or args.screenshot:
+        import visual
+        if args.screenshot:
+            steps = [("until", [args.until]) if args.until else ("sleep", ["3"]), ("shot", [os.path.abspath(args.screenshot)])]
+            args.until = None
+        else:
+            steps = visual.parse_steps(args.visual)
 
     def say(msg):
         if not args.quiet:
@@ -182,6 +315,8 @@ def main():
     biosdir = os.path.join(datadir, "PCSX2", "bios")
     if not os.path.isdir(biosdir) or not os.listdir(biosdir):
         return finish("ERROR", f"no BIOS in {biosdir}")
+    if steps is not None:
+        datadir = visual.prepare_datadir(args.pcsx2_dir)
 
     try:
         block_addr = elf_symbol(elf, BLOCK_SYMBOL)
@@ -202,6 +337,12 @@ def main():
     pine = None
     verdict, detail = None, ""
     t0 = time.time()
+    runner = None
+    if steps is not None:
+        runner = Steps(steps, display, os.path.join(datadir, "PCSX2", "snaps"),
+                       args.shots_dir or os.path.join(os.path.dirname(elf), "visual"),
+                       args.refs or (os.path.dirname(os.path.abspath(args.visual)) if args.visual else None),
+                       args.update, say)
     next_probe = t0 + args.probe if args.probe else None
     pos = 0
     block = None
@@ -223,6 +364,8 @@ def main():
                             started = True
                     elif text.startswith("PS2GO-") or args.run or args.until:
                         say(f"  {text}")
+                    if runner:
+                        runner.feed(text)
                     # A crash is sticky: PCSX2 logs the faulting access and
                     # carries on, so a later result marker must not hide it.
                     if verdict == "CRASH":
@@ -240,6 +383,13 @@ def main():
                         verdict, detail = "ERROR", text
                     elif any(p.search(text) for p in CRASH_PATTERNS):
                         verdict, detail = "CRASH", text
+            if runner and not verdict:
+                try:
+                    runner.tick(now)
+                except (OSError, RuntimeError, ValueError) as e:
+                    verdict, detail = "ERROR", str(e)
+                if runner.done():
+                    verdict, detail = runner.verdict()
             if verdict and not args.run:
                 break
             if proc.poll() is not None:
@@ -249,6 +399,8 @@ def main():
             if now - t0 > args.timeout:
                 if not args.run:
                     verdict, detail = "TIMEOUT", f"after {args.timeout:.0f}s"
+                    if runner:
+                        detail += f" at step {runner.where()}"
                 break
             if pine is None and block_addr is not None:
                 try:

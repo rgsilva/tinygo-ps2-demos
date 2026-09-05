@@ -88,7 +88,7 @@ TINYGO_ENV = PS2DEV=$(PS2DEV) PS2DEV_IMAGE=$(IMAGE) PATH=$(CURDIR)/tools:$$PATH 
 # Rules
 # ---------------------------------------------------------------------------
 
-.PHONY: all $(DEMOS) $(TESTS) $(CONTROLS) check check-harness check-gotest shell clean
+.PHONY: all $(DEMOS) $(TESTS) $(CONTROLS) check check-harness check-gotest check-visual visual-refs shell clean
 .DELETE_ON_ERROR:
 
 all: $(DEMOS) $(TESTS)
@@ -129,6 +129,22 @@ check-harness: $(patsubst %,$(BUILD)/%.elf,$(CONTROLS)) $(BUILD)/tests.elf $(BUI
 	$(PS2TEST) --expect CRASH --detail 'goroutine stack overflow' $(BUILD)/stackoverflow.elf
 	$(PS2TEST) --expect PASS    $(BUILD)/tests.elf
 	$(PS2TEST) --until 'Game start' --timeout 30 $(BUILD)/flappygopher.elf
+
+# Visual checks: PCSX2 renders (software renderer), the harness presses
+# buttons and takes screenshots as tests/visual/<demo>.steps says, and
+# compares them with the reference images next to it. The captures land in
+# build/visual (with a .diff.png for a mismatch). `make visual-refs` rewrites
+# the references after an intended change: eyeball them before committing.
+VISUAL = flappygopher
+check-visual: $(patsubst %,$(BUILD)/%.elf,$(VISUAL))
+	$(foreach d,$(VISUAL),$(PS2TEST) --visual tests/visual/$d.steps --shots-dir $(BUILD)/visual $(BUILD)/$d.elf &&) true
+visual-refs: $(patsubst %,$(BUILD)/%.elf,$(VISUAL))
+	$(foreach d,$(VISUAL),$(PS2TEST) --visual tests/visual/$d.steps --update --shots-dir $(BUILD)/visual $(BUILD)/$d.elf &&) true
+
+# One screenshot of any ELF, in build/visual, taken when the guest prints AT
+# (or after 3 seconds).
+screenshot-%: $(BUILD)/%.elf
+	$(PS2TEST) --screenshot $(BUILD)/visual/$*.png $(if $(AT),--until '$(AT)') $<
 
 # Go's own testing package on the PS2: `tinygo test` builds the test binary
 # and runs it in PCSX2 through the harness (the target's emulator). The
