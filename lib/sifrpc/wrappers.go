@@ -34,20 +34,28 @@ import (
 // ResetAndPatchIOP resets the IOP and applies the sbv patches so that modules
 // can be loaded from EE memory.
 func ResetAndPatchIOP() error {
-	if ret := int(C.resetAndPatchIOP()); ret < 0 {
+	if ret := int(C.resetAndPatchIOP()); ret != 0 {
 		return fmt.Errorf("sifrpc: IOP reset failed: %d", ret)
 	}
 	return nil
 }
+
+// A module's _start returns this when it refuses to stay resident (it did
+// not load, even though the loader reports an id).
+const noResidentEnd = 1
 
 // LoadModule loads an IRX module from a path (host:, mc0:, cdrom0:, ...) and
 // returns its module id.
 func LoadModule(path string) (int, error) {
 	cPath := C.CString(path)
 	defer C.free(unsafe.Pointer(cPath))
-	id := int(C.SifLoadModule(cPath, 0, nil))
+	var modRes C.int
+	id := int(C.SifLoadStartModule(cPath, 0, nil, &modRes))
 	if id < 0 {
 		return id, fmt.Errorf("sifrpc: loading %s failed: %d", path, id)
+	}
+	if modRes == noResidentEnd {
+		return id, fmt.Errorf("sifrpc: module %s did not stay resident", path)
 	}
 	return id, nil
 }
@@ -63,9 +71,13 @@ func LoadModuleBuffer(data []byte) (int, error) {
 	if uintptr(p)%16 != 0 {
 		return -1, fmt.Errorf("sifrpc: module data at %#x is not 16-byte aligned", uintptr(p))
 	}
-	id := int(C.SifExecModuleBuffer(p, C.uint(len(data)), 0, nil, nil))
+	var modRes C.int
+	id := int(C.SifExecModuleBuffer(p, C.uint(len(data)), 0, nil, &modRes))
 	if id < 0 {
 		return id, fmt.Errorf("sifrpc: loading module from memory failed: %d", id)
+	}
+	if modRes == noResidentEnd {
+		return id, fmt.Errorf("sifrpc: module %d did not stay resident", id)
 	}
 	return id, nil
 }
