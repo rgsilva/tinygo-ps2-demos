@@ -118,7 +118,9 @@ $(BUILD)/%.elf: $(GO_SOURCES) $(IRX_FILES) $(RAW_FILES) $(MAKEFILES_) | $(BUILD)
 	@echo "  PNG2RAW $@"
 	$(Q)$(PYTHON) tools/png2raw.py $< $@
 
-# IOP modules from the ps2sdk in the image, for the iop package.
+# IOP modules from the ps2sdk in the image, for the iop package (kept: make
+# would delete them as intermediates after each build).
+.SECONDARY: $(IRX_FILES)
 lib/iop/%.irx:
 	@echo "  IRX     $@"
 	$(Q)$(DOCKER) cp $(PS2SDK_IMG)/iop/irx/$*.irx $@
