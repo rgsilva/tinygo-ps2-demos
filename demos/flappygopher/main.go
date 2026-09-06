@@ -156,11 +156,15 @@ func drawFPS() {
 		fps = time.Second / lastFrameTime
 	}
 	line := fmt.Sprintf("FPS: %d", fps)
-	gskit.FontPrint(
-		gsGlobal, textFont,
-		0, 0, 1, 0.95,
-		gskit.GS_SETREG_RGBAQ(0xFF, 0xFF, 0xFF, 0x80, 0x00),
-		line)
+	gskit.FontPrint(gsGlobal, textFont, 0, 0, 1, 0.95, textColor(), line)
+}
+
+// Black text over the sky, white on the black menu and game-over screens.
+func textColor() uint64 {
+	if gameState == InGame {
+		return gskit.GS_SETREG_RGBAQ(0x00, 0x00, 0x00, 0x80, 0x00)
+	}
+	return gskit.GS_SETREG_RGBAQ(0xFF, 0xFF, 0xFF, 0x80, 0x00)
 }
 
 func initController() {
@@ -216,7 +220,6 @@ func loadSkyTexture()      { skyTex = loadTexture(320, 214, texSky) }
 func loadFont() {
 	textFont = gskit.InitFontFromMemory(fonts.Arial)
 	must(gskit.FontUpload(gsGlobal, textFont))
-	textFont.AddSpacing(-2) // tighter than the font's own advance widths
 }
 
 func drawFrame() {
@@ -419,7 +422,7 @@ func drawInGame() {
 	gskit.FontPrint(
 		gsGlobal, textFont,
 		0, 16, 1, 1,
-		gskit.GS_SETREG_RGBAQ(0xFF, 0xFF, 0xFF, 0x80, 0x00),
+		textColor(),
 		line)
 }
 

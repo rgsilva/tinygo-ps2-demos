@@ -92,7 +92,6 @@ func initGraphics() {
 	must(skyTex.Upload(gs, texSky))
 	font = gskit.InitFontFromMemory(fonts.Arial)
 	must(gskit.FontUpload(gs, font))
-	font.AddSpacing(-2)
 }
 
 // project transforms the cube's corners for this frame.

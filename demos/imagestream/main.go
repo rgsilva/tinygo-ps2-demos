@@ -110,10 +110,11 @@ func initGraphics() {
 	gs.SetDoubleBuffering(true)
 	gs.SetZBuffering(false)
 	gskit.InitScreen(gs)
+	gs.SetPrimAlphaEnable(true)
+	gskit.SetPrimAlpha(gs, gskit.GS_BLEND_SOURCE_ALPHA, false)
 	tex = gskit.NewTexture(texSize, texSize, gskit.GS_PSM_CT32, gskit.GS_FILTER_NEAREST)
 	font = gskit.InitFontFromMemory(fonts.Arial)
 	must(gskit.FontUpload(gs, font))
-	font.AddSpacing(-2)
 }
 
 func must(err error) {
