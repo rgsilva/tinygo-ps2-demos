@@ -259,7 +259,10 @@ class Steps:
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("elf")
+    ap.add_argument("elf", help="the ELF to run, or a disc image (.iso) to boot")
+    ap.add_argument("--elf", dest="elf_symbols", metavar="ELF",
+                    help="with a disc image: the ELF on it, for memory probing")
+    ap.add_argument("--slowboot", action="store_true", help="with a disc image: boot through the whole BIOS, browser included")
     ap.add_argument("--timeout", type=float, default=60, help="seconds before TIMEOUT (default 60)")
     ap.add_argument("--expect", choices=list(EXIT_CODES), help="exit 0 only if the verdict equals this")
     ap.add_argument("--detail", help="with --expect: the verdict's detail must also contain this text")
@@ -285,6 +288,7 @@ def main():
     args = ap.parse_args()
 
     elf = os.path.abspath(args.elf)
+    disc = elf.lower().endswith(".iso")
     binary = os.path.join(args.pcsx2_dir, "squashfs-root", "usr", "bin", "pcsx2-qt")
     datadir = os.path.join(args.pcsx2_dir, "data")
     log = os.path.abspath(args.log or f"/tmp/ps2test-{os.getpid()}.log")
@@ -339,10 +343,13 @@ def main():
         except OSError as e:
             return finish("ERROR", f"net helpers: {e}")
 
-    try:
-        block_addr = elf_symbol(elf, BLOCK_SYMBOL)
-    except ValueError as e:
-        return finish("ERROR", str(e))
+    block_addr = None
+    symbols = args.elf_symbols or (None if disc else elf)
+    if symbols:
+        try:
+            block_addr = elf_symbol(symbols, BLOCK_SYMBOL)
+        except ValueError as e:
+            return finish("ERROR", str(e))
     if block_addr is None:
         say(f"note: no {BLOCK_SYMBOL} symbol, memory probing disabled")
 
@@ -353,7 +360,9 @@ def main():
     env = dict(os.environ, DISPLAY=display, LIBGL_ALWAYS_SOFTWARE="1", QT_QPA_PLATFORM="xcb")
     if os.path.exists(log):
         os.remove(log)
-    proc = subprocess.Popen([binary, "-datapath", datadir, "-batch", "-nogui", "-logfile", log, "-elf", elf],
+    # A disc image boots through the BIOS (fast boot skips its browser).
+    boot = ["-slowboot" if args.slowboot else "-fastboot", elf] if disc else ["-elf", elf]
+    proc = subprocess.Popen([binary, "-datapath", datadir, "-batch", "-nogui", "-logfile", log] + boot,
                             env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     pine = None
     verdict, detail = None, ""
