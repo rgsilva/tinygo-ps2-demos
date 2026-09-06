@@ -7,6 +7,10 @@ func main() {
 	cases := []harness.Case{
 		{Name: "hello", Fn: hello},
 		{Name: "gc-floor", Fn: testGCFloor},
+		// Early: stacks are scanned conservatively, and words the later cases
+		// leave behind (deep frames of the big-number and certificate code)
+		// pin dead buffers, which is not what this case measures.
+		{Name: "gc-reclaim", Fn: testGCReclaim},
 		{Name: "strings", Fn: testStrings},
 		{Name: "slices-maps", Fn: testSlicesMaps},
 		{Name: "interfaces-closures", Fn: testInterfacesClosures},
@@ -48,7 +52,6 @@ func main() {
 		{Name: "gc-stress", Fn: testGCStress},
 		{Name: "memstats", Fn: testMemStats},
 		{Name: "gc-roots", Fn: testGCRoots},
-		{Name: "gc-reclaim", Fn: testGCReclaim},
 		{Name: "gc-large", Fn: testGCLarge},
 		{Name: "gc-natural", Fn: testGCNatural},
 		{Name: "gc-finalizer", Fn: testGCFinalizer},
