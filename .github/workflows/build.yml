@@ -30,14 +30,8 @@ jobs:
       # suite, the network test and the harness's controls, for the harness.
       - name: Package
         run: |
-          demos=$(make -s -f - <<'MK'
-          include Makefile
-          .PHONY: names
-          names: ; @echo $(DEMOS)
-          MK
-          )
           demo_files=""
-          for d in $demos; do demo_files="$demo_files build/$d.elf build/$d.iso"; done
+          for iso in build/*.iso; do demo_files="$demo_files ${iso%.iso}.elf $iso"; done
           python3 -m zipfile -c demos.zip $demo_files
           python3 -m zipfile -c tests.zip build/tests.elf build/net.elf build/fail.elf build/hang.elf build/crash.elf build/panic.elf build/deadlock.elf build/gopanic.elf build/stackoverflow.elf
           python3 -m zipfile -l demos.zip
