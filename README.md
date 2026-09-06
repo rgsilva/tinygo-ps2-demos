@@ -92,9 +92,19 @@ friends work from then on. Names are resolved by the driver itself (one A query 
 DNS server; the stack's own resolver is broken over the RPC). Transfers go in 960-byte RPC
 pieces and each socket call is a round trip to the IOP, so expect about a megabyte per second.
 
+TLS is `lib/tls13`, a TLS 1.3 client in Go (X25519 and P-256, AES-GCM and ChaCha20-Poly1305,
+ECDSA, RSA-PSS and Ed25519 server signatures, chains verified with crypto/x509 against Mozilla's
+root bundle, 189 KB embedded). TinyGo's own crypto/tls is a stub, so the driver provides the TLS
+socket type the `net` package asks for: `net.DialTLS` and https in `net/http` work unchanged,
+and `tls13.Dial` gives the negotiated parameters. A handshake takes about 200 ms in the emulator
+and about 4 MB of code. Sync the RTC first (certificate dates), and know that crypto/rand on the
+console is a generator seeded from timers, not a hardware source. No resumption, client
+certificates or TLS 1.2.
+
 `make check-net` runs `tests/net/` and boots the network demos in PCSX2 with the emulated
 ethernet (`ps2test.py --net`: DEV9 through PCSX2's Sockets backend, which needs no privileges;
-the harness answers as `host.ps2go` with an echo server, an HTTP server and the image server).
+the harness answers as `host.ps2go` with an echo server, an HTTP server, an HTTPS server with a
+certificate made on the spot, and the image server).
 The emulator hands out 192.0.2.100 and cannot deliver inbound connections, so listening is an
 expected failure there; on the console `httpserver` is reachable from the LAN.
 
