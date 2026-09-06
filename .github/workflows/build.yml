@@ -24,17 +24,31 @@ jobs:
           go version
       - name: Host tests
         run: go test ./lib/tls13
-      - name: Build the demos and their disc images
-        run: make -j2 all iso V=1
-      - name: List
-        run: ls -l build/*.elf build/*.iso
-      - name: Upload the ELFs and ISOs
+      - name: Build everything (demos with disc images, tests, controls)
+        run: make -j2 all iso fail hang crash panic deadlock gopanic stackoverflow V=1
+      # demos.zip: every demo as an ELF and a disc image. tests.zip: the
+      # suite, the network test and the harness's controls, for the harness.
+      - name: Package
+        run: |
+          demos=$(make -s -f - <<'MK'
+          include Makefile
+          .PHONY: names
+          names: ; @echo $(DEMOS)
+          MK
+          )
+          demo_files=""
+          for d in $demos; do demo_files="$demo_files build/$d.elf build/$d.iso"; done
+          python3 -m zipfile -c demos.zip $demo_files
+          python3 -m zipfile -c tests.zip build/tests.elf build/net.elf build/fail.elf build/hang.elf build/crash.elf build/panic.elf build/deadlock.elf build/gopanic.elf build/stackoverflow.elf
+          python3 -m zipfile -l demos.zip
+          python3 -m zipfile -l tests.zip
+      - name: Upload
         uses: actions/upload-artifact@v7
         with:
           name: ps2go-demos-${{ github.sha }}
           path: |
-            build/*.elf
-            build/*.iso
+            demos.zip
+            tests.zip
           if-no-files-found: error
       # The image has no GitHub CLI.
       - name: Install the GitHub CLI
@@ -44,9 +58,9 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" --generate-notes build/*.elf build/*.iso
-      # The rolling dev-latest pre-release: the ELFs and disc images of the
-      # last build of main, always at the same address.
+        run: gh release create "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" --generate-notes demos.zip tests.zip
+      # The rolling dev-latest pre-release: the last build of main, always at
+      # the same address (stale files are removed first).
       - name: Publish the dev release
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         env:
@@ -56,6 +70,7 @@ jobs:
           git push --force origin "$GITHUB_SHA:refs/tags/dev-latest"
           if ! gh release view dev-latest > /dev/null 2>&1; then
             gh release create dev-latest --prerelease --title "Latest build" \
-              --notes "Rolling build of main: every demo as an ELF (for ps2link or an emulator) and as a bootable disc image. Replaced on every push."
+              --notes "Rolling build of main. demos.zip: every demo as an ELF (for ps2link or an emulator) and as a bootable disc image; tests.zip: the test programs for the harness. Replaced on every push."
           fi
-          gh release upload dev-latest build/*.elf build/*.iso --clobber
+          gh release view dev-latest --json assets --jq '.assets[].name' | xargs -r -n1 gh release delete-asset dev-latest --yes
+          gh release upload dev-latest demos.zip tests.zip --clobber
