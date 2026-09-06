@@ -75,6 +75,15 @@ PS2SDK_IMG = $(PS2DEV_IMG)/ps2sdk
 DOCKER = docker run --rm $(if $(MAKE_TERMOUT),-t) --user=$(shell id -u):$(shell id -g) \
          -v $(CURDIR):/src -w /src $(IMAGE)
 
+# Bootable CD images (tools/mkiso.py): SYSTEM.CNF plus the ELF under its 8.3
+# name, <name>_ISO_NAME or the demo's name uppercased and cut to 8. Burn as
+# a single-session CD-R; a modchipped console (or PCSX2) boots it.
+flappygopher_ISO_NAME = FLAPPY.ELF
+httpclient_ISO_NAME = HTTPCLI.ELF
+httpserver_ISO_NAME = HTTPSRV.ELF
+imagestream_ISO_NAME = IMAGES.ELF
+iso_name = $(or $($(1)_ISO_NAME),$(shell echo $(1) | tr a-z A-Z | cut -c1-8).ELF)
+
 # Precise GC (pointer-free objects are not scanned: faster collections with
 # buffers and tables, slower with many small pointer-heavy objects) and speed
 # over size. Measured on the suite, 2026-09-04: idle collection 7.7 ms vs
@@ -91,7 +100,7 @@ TINYGO_ENV = PS2DEV=$(PS2DEV) PS2DEV_IMAGE=$(IMAGE) PATH=$(CURDIR)/tools:$$PATH 
 # Rules
 # ---------------------------------------------------------------------------
 
-.PHONY: all $(DEMOS) $(TESTS) $(CONTROLS) check check-net check-harness check-gotest check-visual visual-refs shell clean
+.PHONY: all $(DEMOS) $(TESTS) $(CONTROLS) iso check check-iso check-net check-harness check-gotest check-visual visual-refs shell clean
 .DELETE_ON_ERROR:
 
 all: $(DEMOS) $(TESTS)
@@ -130,6 +139,17 @@ TIMEOUT ?= 120
 PS2TEST = PS2GO_PCSX2_DIR=$(PCSX2_DIR) $(PYTHON) tools/pcsx2/ps2test.py --timeout $(TIMEOUT)
 check: $(BUILD)/tests.elf
 	$(PS2TEST) $<
+
+# Disc images of the demos, and a boot of two of them from the disc in PCSX2
+# (the BIOS reads SYSTEM.CNF and loads the ELF through the CD driver).
+$(BUILD)/%.iso: $(BUILD)/%.elf tools/mkiso.py
+	@echo "  MKISO   $@"
+	$(Q)$(PYTHON) tools/mkiso.py -n $(call iso_name,$*) -v $* $@ $<
+iso-%: $(BUILD)/%.iso ;
+iso: $(patsubst %,$(BUILD)/%.iso,$(DEMOS))
+check-iso: $(BUILD)/flappygopher.iso $(BUILD)/cube.iso
+	$(PS2TEST) --until 'Game start' --timeout 60 --elf $(BUILD)/flappygopher.elf $(BUILD)/flappygopher.iso
+	$(PS2TEST) --until 'Cube start' --timeout 60 --elf $(BUILD)/cube.elf $(BUILD)/cube.iso
 
 # Network checks in PCSX2 with the emulated ethernet (DEV9 through PCSX2's
 # Sockets backend; the harness runs echo, HTTP and image servers on this
