@@ -56,7 +56,7 @@ NET_OVERRIDES = {
 
 # The guest reaches this machine by this name (a PCSX2 DNS hosts entry).
 HOST_NAME = "host.ps2go"
-ECHO_PORT, HTTP_PORT = 17777, 18080
+ECHO_PORT, HTTP_PORT, TLS_PORT = 17777, 18080, 18443
 
 
 def host_ip():
@@ -142,6 +142,22 @@ class NetHelpers:
             socketserver.ThreadingUDPServer(("0.0.0.0", ECHO_PORT), UDPEcho),
             http.server.ThreadingHTTPServer(("0.0.0.0", HTTP_PORT), Page),
         ]
+        # An HTTPS server (TLS 1.3 only) with a self-signed certificate made
+        # on the spot, for the TLS checks.
+        import ssl
+        import subprocess
+        import tempfile
+        self.tmp = tempfile.mkdtemp(prefix="ps2go-tls-")
+        crt, key = os.path.join(self.tmp, "srv.crt"), os.path.join(self.tmp, "srv.key")
+        subprocess.run(["openssl", "req", "-x509", "-newkey", "ec", "-pkeyopt", "ec_paramgen_curve:prime256v1",
+                        "-nodes", "-keyout", key, "-out", crt, "-days", "2", "-subj", "/CN=" + HOST_NAME,
+                        "-addext", "subjectAltName=DNS:" + HOST_NAME], check=True, capture_output=True)
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ctx.minimum_version = ssl.TLSVersion.TLSv1_3
+        ctx.load_cert_chain(crt, key)
+        https = http.server.ThreadingHTTPServer(("0.0.0.0", TLS_PORT), Page)
+        https.socket = ctx.wrap_socket(https.socket, server_side=True)
+        self.servers.append(https)
         # The imagestream demo's server (tools/imageserver.py), on its port.
         sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
         import imageserver
@@ -153,6 +169,7 @@ class NetHelpers:
         for srv in self.servers:
             srv.shutdown()
             srv.server_close()
+        shutil.rmtree(self.tmp, ignore_errors=True)
 
 
 def prepare_datadir(pcsx2_dir, name, overrides):

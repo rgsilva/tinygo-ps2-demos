@@ -3,11 +3,13 @@
 package main
 
 import (
+	"crypto/x509"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"net/netip"
+	"strings"
 	"time"
 
 	"ps2go/lib/harness"
@@ -15,7 +17,9 @@ import (
 	"ps2go/lib/netman"
 	"ps2go/lib/ps2ip"
 	"ps2go/lib/ps2net"
+	"ps2go/lib/rtc"
 	"ps2go/lib/sifrpc"
+	"ps2go/lib/tls13"
 )
 
 // The harness (--net) resolves this name to the host machine and runs an
@@ -24,6 +28,7 @@ const (
 	host     = "host.ps2go"
 	echoPort = 17777
 	httpPort = 18080
+	tlsPort  = 18443
 )
 
 func main() {
@@ -35,9 +40,14 @@ func main() {
 		{Name: "net-raw", Fn: testRaw},
 		{Name: "net-tcp-echo", Fn: testTCPEcho},
 		{Name: "net-tcp-deadline", Fn: testTCPDeadline},
+		{Name: "net-tcp-sizes", Fn: testTCPSizes},
 		{Name: "net-http-get", Fn: testHTTPGet},
 		{Name: "net-http-large", Fn: testHTTPLarge},
 		{Name: "net-udp-echo", Fn: testUDPEcho},
+		{Name: "tls-selftest", Fn: func() error { return tls13.SelfTest() }},
+		{Name: "tls-local-handshake", Fn: testTLSLocal},
+		{Name: "tls-bad-cert", Fn: testTLSBadCert},
+		{Name: "tls-https-public", Fn: testTLSPublic},
 		{Name: "net-tcp-listen", Fn: testTCPListen, XFail: "PCSX2's Sockets backend has no inbound connections"},
 	})
 }
@@ -322,4 +332,126 @@ func testTCPListen() error {
 	case <-time.After(5 * time.Second):
 		return fmt.Errorf("no connection within 5 s")
 	}
+}
+
+// testTLSLocal handshakes with the harness's HTTPS server (self-signed, so
+// without verification) and fetches a page over it.
+func testTLSLocal() error {
+	if _, err := rtc.Sync(); err != nil { // certificate dates need the real time
+		return err
+	}
+	t := time.Now()
+	c, err := tls13.Dial(fmt.Sprintf("%s:%d", host, tlsPort), &tls13.Config{InsecureSkipVerify: true})
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	st := c.ConnectionState()
+	harness.Logf("handshake in %s: version %#x suite %#x, %d certs, %s", time.Since(t), st.Version, st.CipherSuite,
+		len(st.PeerCertificates), st.PeerCertificates[0].Subject)
+	if st.Version != 0x0304 {
+		return fmt.Errorf("version %#x", st.Version)
+	}
+	fmt.Fprintf(c, "GET /hello HTTP/1.0\r\nHost: %s\r\n\r\n", host)
+	body, err := io.ReadAll(c)
+	if err != nil {
+		return err
+	}
+	if !strings.HasPrefix(string(body), "HTTP/1.0 200") || !strings.HasSuffix(string(body), "hello from the host\n") {
+		return fmt.Errorf("got %q", body)
+	}
+	return nil
+}
+
+// testTLSBadCert: the self-signed certificate must be rejected when
+// verifying.
+func testTLSBadCert() error {
+	c, err := tls13.Dial(fmt.Sprintf("%s:%d", host, tlsPort), nil)
+	if err == nil {
+		c.Close()
+		return fmt.Errorf("self-signed certificate accepted")
+	}
+	harness.Logf("rejected: %v", err)
+	if _, ok := err.(x509.UnknownAuthorityError); !ok && !strings.Contains(err.Error(), "certificate") {
+		return fmt.Errorf("unexpected error: %v", err)
+	}
+	return nil
+}
+
+// testTLSPublic fetches https://example.com/ through net/http with the
+// chain verified against the embedded roots (the clock from the RTC).
+func testTLSPublic() error {
+	t := time.Now()
+	resp, err := http.Get("https://example.com/")
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	harness.Logf("%s, %d bytes in %s", resp.Status, len(body), time.Since(t))
+	if resp.StatusCode != 200 || !strings.Contains(string(body), "Example") {
+		return fmt.Errorf("unexpected response %s", resp.Status)
+	}
+	return nil
+}
+
+// testTCPSizes echoes messages of many sizes (around the RPC chunk and
+// cache line boundaries) and checks every byte, reading the echo either
+// in one go or as a 5-byte "header" first, like a TLS record.
+func testTCPSizes() error {
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", host, echoPort))
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	sizes := []int{1, 5, 63, 64, 65, 122, 127, 128, 129, 191, 192, 193, 895, 896, 897, 900, 959, 960, 961, 1023, 1024, 1025, 1500, 2000, 4000}
+	buf := make([]byte, 4096)
+	var failures []string
+	for _, split := range []bool{false, true} {
+		for _, n := range sizes {
+			msg := make([]byte, n)
+			for i := range msg {
+				msg[i] = byte(i*7 + n)
+			}
+			if _, err := conn.Write(msg); err != nil {
+				return err
+			}
+			got := buf[:0]
+			for len(got) < n {
+				want := n - len(got)
+				if split && len(got) < 5 {
+					want = 5 - len(got)
+				}
+				m, err := conn.Read(buf[len(got) : len(got)+want])
+				if err != nil {
+					return fmt.Errorf("size %d after %d: %w", n, len(got), err)
+				}
+				got = buf[:len(got)+m]
+			}
+			for i := range msg {
+				if got[i] != msg[i] {
+					lo := i - 4
+					if lo < 0 {
+						lo = 0
+					}
+					hi := i + 12
+					if hi > n {
+						hi = n
+					}
+					failures = append(failures, fmt.Sprintf("size %d split %v: byte %d: got %x want %x", n, split, i, got[lo:hi], msg[lo:hi]))
+					break
+				}
+			}
+		}
+	}
+	for _, f := range failures {
+		harness.Logf("%s", f)
+	}
+	if len(failures) > 0 {
+		return fmt.Errorf("%d of %d transfers corrupted", len(failures), 2*len(sizes))
+	}
+	return nil
 }
