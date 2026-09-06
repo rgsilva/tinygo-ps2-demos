@@ -13,6 +13,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container: ghcr.io/rgsilva/tinygo-ps2:dev
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -39,3 +41,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" --generate-notes build/*.elf build/*.iso
+      # The rolling dev-latest pre-release: the ELFs and disc images of the
+      # last build of main, always at the same address.
+      - name: Publish the dev release
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config --global --add safe.directory "$PWD"
+          git push --force origin "$GITHUB_SHA:refs/tags/dev-latest"
+          if ! gh release view dev-latest > /dev/null 2>&1; then
+            gh release create dev-latest --prerelease --title "Latest build" \
+              --notes "Rolling build of main: every demo as an ELF (for ps2link or an emulator) and as a bootable disc image. Replaced on every push."
+          fi
+          gh release upload dev-latest build/*.elf build/*.iso --clobber
