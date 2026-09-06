@@ -61,12 +61,13 @@ func memstatsSmall() (inuse, objects uint32) {
 }
 
 // testGCRoots checks that the globals range the GC scans is the Go program's
-// own data only (a few KB) and contains few heap-looking words. Before the
-// linker script change it spanned the SDK's .data..bss (~78 KB) with ~240
-// false roots from libkernel's code blobs.
+// own data only (tens of KB: the suite's crypto and math/big tables are the
+// bulk) and contains few heap-looking words. Before the linker script
+// change it spanned the SDK's .data..bss (~78 KB) with ~240 false roots
+// from libkernel's code blobs.
 func testGCRoots() error {
 	start, end := uintptr(C.ps2go_globals_start()), uintptr(C.ps2go_globals_end())
-	if end <= start || end-start > 32*1024 {
+	if end <= start || end-start > 64*1024 {
 		return fmt.Errorf("globals range %#x-%#x (%d bytes)", start, end, end-start)
 	}
 	n, words := 0, 0
