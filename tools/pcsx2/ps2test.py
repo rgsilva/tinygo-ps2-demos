@@ -317,7 +317,7 @@ def main():
     biosdir = os.path.join(datadir, "PCSX2", "bios")
     if not os.path.isdir(biosdir) or not os.listdir(biosdir):
         return finish("ERROR", f"no BIOS in {biosdir}")
-    if steps is not None or args.net:
+    if steps is not None or args.net or args.pine_slot != 28011:
         import visual
         name, overrides = [], {}
         if steps is not None:
@@ -326,6 +326,11 @@ def main():
         if args.net:
             name.append("net")
             overrides.update(visual.net_overrides())
+        if args.pine_slot != 28011:
+            # Another slot means another PCSX2 may run at the same time:
+            # its own data directory, its own PINE socket.
+            name.append(f"slot{args.pine_slot}")
+            overrides[("EmuCore", "PINESlot")] = str(args.pine_slot)
         datadir = visual.prepare_datadir(args.pcsx2_dir, "-".join(name), overrides)
     helpers = None
     if args.net:
