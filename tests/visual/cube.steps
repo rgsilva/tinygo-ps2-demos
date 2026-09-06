@@ -1,0 +1,5 @@
+# The cube demo: a textured, semi-transparent cube over the sky. The
+# rotation is frame-driven, so the frame after 'Cube start' is stable.
+until Cube start
+sleep 1
+shot cube 10

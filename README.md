@@ -9,12 +9,13 @@ This is a hobby project and I'm not a game developer. This project was created f
 
 ## Layout
 
-* `demos/` — the programs, one directory each: `flappygopher`, `blend` (a blending check),
-  `httpclient`, `httpserver` and `imagestream` (network; the last one talks to `tools/imageserver.py`).
+* `demos/` — the programs, one directory each: `flappygopher`, `blend` (a blending check), `cube`
+  (a textured, semi-transparent 3D cube), `httpclient`, `httpserver` and `imagestream` (network; the
+  last one talks to `tools/imageserver.py`).
 * `lib/` — Go packages: cgo bindings to the ps2sdk libraries (`gskit`, `dmakit`, `libpad`,
   `sifrpc`, `rtc`, `debug`, `netman`, `ps2ip`), the network driver for Go's `net` package
-  (`ps2net`), the embedded IOP modules (`iop`), a gsKit font (`fonts`) and the guest side of
-  the test harness (`harness`).
+  (`ps2net`), the embedded IOP modules (`iop`), a gsKit font (`fonts`), 3D vectors and matrices
+  (`vec`) and the guest side of the test harness (`harness`).
 * `tests/` — the harness suite (`suite`), the negative controls (`controls/*`), the
   `tinygo test` example (`gotest`) and the visual checks' steps and reference images (`visual`).
 * `tools/` — the Docker wrapper for the ps2sdk gcc and the PCSX2 harness (`pcsx2/`).
