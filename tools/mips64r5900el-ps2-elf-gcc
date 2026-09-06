@@ -6,6 +6,16 @@
 # TinyGo tree ($TINYGOROOT, for targets/ps2.ld), so the paths in the
 # command line need no translation. With a native ps2dev toolchain on PATH
 # this wrapper is not needed.
+# A native toolchain elsewhere on PATH (the tinygo-ps2 image, a ps2dev
+# install) is used directly.
+self=$(cd "$(dirname "$0")" && pwd)
+IFS=:
+for dir in $PATH; do
+	[ "$dir" = "$self" ] && continue
+	[ -x "$dir/mips64r5900el-ps2-elf-gcc" ] && exec "$dir/mips64r5900el-ps2-elf-gcc" "$@"
+done
+unset IFS
+
 mounts="-v /tmp:/tmp -v $PWD:$PWD"
 for dir in "$HOME" "$PS2DEV" "$TINYGOROOT"; do
 	[ -n "$dir" ] && [ -d "$dir" ] && mounts="$mounts -v $dir:$dir"

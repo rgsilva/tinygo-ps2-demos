@@ -1,0 +1,41 @@
+# Build every demo (ELF and disc image) with the tinygo-ps2 image, the
+# fork's TinyGo on top of the ps2dev toolchain. No emulator here: the
+# suite, the visual and the network checks need a BIOS and run locally.
+name: Build
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: ghcr.io/rgsilva/tinygo-ps2:dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Toolchain
+        run: |
+          tinygo version
+          go version
+      - name: Host tests
+        run: go test ./lib/tls13
+      - name: Build the demos and their disc images
+        run: make -j2 all iso V=1
+      - name: List
+        run: ls -l build/*.elf build/*.iso
+      - name: Upload the ELFs and ISOs
+        uses: actions/upload-artifact@v7
+        with:
+          name: ps2go-demos-${{ github.sha }}
+          path: |
+            build/*.elf
+            build/*.iso
+          if-no-files-found: error
+      - name: Attach to the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" --generate-notes build/*.elf build/*.iso

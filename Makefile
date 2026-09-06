@@ -68,10 +68,6 @@ Q = $(if $(filter 1,$(V)),,@)
 # Flags live here, so rebuild when the Makefile (or config.mk) changes.
 MAKEFILES_ = Makefile $(wildcard config.mk)
 
-# Paths inside the image (IOP modules are copied from there).
-PS2DEV_IMG = /usr/local/ps2dev
-PS2SDK_IMG = $(PS2DEV_IMG)/ps2sdk
-
 DOCKER = docker run --rm $(if $(MAKE_TERMOUT),-t) --user=$(shell id -u):$(shell id -g) \
          -v $(CURDIR):/src -w /src $(IMAGE)
 
@@ -127,12 +123,12 @@ $(BUILD)/%.elf: $(GO_SOURCES) $(IRX_FILES) $(RAW_FILES) $(MAKEFILES_) | $(BUILD)
 	@echo "  PNG2RAW $@"
 	$(Q)$(PYTHON) tools/png2raw.py $< $@
 
-# IOP modules from the ps2sdk in the image, for the iop package (kept: make
-# would delete them as intermediates after each build).
+# IOP modules from the ps2sdk copy, for the iop package (kept: make would
+# delete them as intermediates after each build).
 .SECONDARY: $(IRX_FILES)
-lib/iop/%.irx:
+lib/iop/%.irx: $(PS2DEV)/ps2sdk/iop/irx/%.irx
 	@echo "  IRX     $@"
-	$(Q)$(DOCKER) cp $(PS2SDK_IMG)/iop/irx/$*.irx $@
+	$(Q)cp $< $@
 
 # Run the test suite in PCSX2 (headless). TIMEOUT is in seconds.
 TIMEOUT ?= 120
