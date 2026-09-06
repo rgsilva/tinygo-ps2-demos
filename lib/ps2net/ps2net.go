@@ -22,6 +22,7 @@ import "C"
 
 import (
 	"fmt"
+	"io"
 	"net/netip"
 	"time"
 	"unsafe"
@@ -94,6 +95,9 @@ func (d *Driver) Addr() (netip.Addr, error) {
 }
 
 func (d *Driver) Socket(domain int, stype int, protocol int) (int, error) {
+	if protocol == ipprotoTLS {
+		return tlsNewSocket(), nil
+	}
 	fd := C.ps2go_socket(C.int(domain), C.int(stype), C.int(protocol))
 	if fd < 0 {
 		return -1, cerr("socket", fd)
@@ -109,6 +113,9 @@ func (d *Driver) Bind(sockfd int, ip netip.AddrPort) error {
 }
 
 func (d *Driver) Connect(sockfd int, host string, ip netip.AddrPort) error {
+	if s := tlsGet(sockfd); s != nil {
+		return tlsConnect(s, host, ip)
+	}
 	if ret := C.ps2go_connect(C.int(sockfd), toC(ip.Addr()), C.ushort(ip.Port())); ret < 0 {
 		return cerr("connect", ret)
 	}
@@ -138,6 +145,9 @@ func (d *Driver) Accept(sockfd int) (int, netip.AddrPort, error) {
 // Send writes what the socket takes now (up to the IOP's 1 KB per call,
 // looped inside); the net package calls again for the rest.
 func (d *Driver) Send(sockfd int, buf []byte, flags int, deadline time.Time) (int, error) {
+	if s := tlsGet(sockfd); s != nil {
+		return tlsSend(s, buf, deadline)
+	}
 	if len(buf) == 0 {
 		return 0, nil
 	}
@@ -152,6 +162,9 @@ func (d *Driver) Send(sockfd int, buf []byte, flags int, deadline time.Time) (in
 }
 
 func (d *Driver) Recv(sockfd int, buf []byte, flags int, deadline time.Time) (int, error) {
+	if s := tlsGet(sockfd); s != nil {
+		return tlsRecv(s, buf, deadline)
+	}
 	if len(buf) == 0 {
 		return 0, nil
 	}
@@ -162,10 +175,16 @@ func (d *Driver) Recv(sockfd int, buf []byte, flags int, deadline time.Time) (in
 	if n < 0 {
 		return -1, cerr("recv", n)
 	}
+	if n == 0 {
+		return 0, io.EOF // the peer closed (the net package passes EOF through)
+	}
 	return int(n), nil
 }
 
 func (d *Driver) Close(sockfd int) error {
+	if s := tlsGet(sockfd); s != nil {
+		return tlsClose(sockfd, s)
+	}
 	if ret := C.ps2go_close(C.int(sockfd)); ret < 0 {
 		return cerr("close", ret)
 	}
@@ -173,6 +192,9 @@ func (d *Driver) Close(sockfd int) error {
 }
 
 func (d *Driver) SetSockOpt(sockfd int, level int, opt int, value interface{}) error {
+	if tlsGet(sockfd) != nil {
+		return nil
+	}
 	var v int
 	switch x := value.(type) {
 	case int:

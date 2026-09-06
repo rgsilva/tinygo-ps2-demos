@@ -9,6 +9,8 @@
 #include <string.h>
 #include <tamtypes.h>
 #include <kernel.h>
+#include <sifrpc.h>
+#include <ps2ip_rpc.h>
 #include <ps2ips.h>
 #include <sys/socket.h>
 
@@ -111,22 +113,64 @@ int ps2go_send(int s, const void *buf, int len, int flags) {
 	return done;
 }
 
-// Receives go through this 64-byte aligned buffer: the IOP splits a
-// transfer into an unaligned head, a DMA'd middle and a tail by the EE
-// address, and that arithmetic is not safe for arbitrary Go buffers.
+// Receives are our own RPC call to ps2ips, not the library's ps2ipc_recv:
+// the IOP finishes a receive by DMAing a 144-byte completion record
+// (rests_pkt: the unaligned head and tail bytes) to a buffer the caller
+// names, and the library's buffer is 128 bytes, so the last 16 bytes of a
+// tail longer than 48 bytes were overwritten by the RPC reply. The data
+// goes to a 64-byte aligned buffer: the IOP then DMAs the whole middle
+// (behind the data cache, read through the uncached mirror) and the
+// completion handler copies the tail with the CPU.
+static SifRpcClientData_t recv_rpc __attribute__((aligned(64)));
+static union {
+	s_recv_pkt s;
+	r_recv_pkt r;
+} recv_pkt __attribute__((aligned(64)));
+static rests_pkt recv_rests __attribute__((aligned(64)));
 static char recv_buf[RPC_CHUNK] __attribute__((aligned(64)));
+#define UNCACHED(p) ((void *)((unsigned int)(p) | 0x20000000))
+
+// Runs when the reply arrives: the head and tail bytes into place.
+static void recv_done(void *data) {
+	rests_pkt *rests = UNCACHED(data);
+	for (int i = 0; i < rests->ssize; i++) {
+		rests->sbuf[i] = rests->sbuffer[i];
+	}
+	for (int i = 0; i < rests->esize; i++) {
+		rests->ebuf[i] = rests->ebuffer[i];
+	}
+}
 
 int ps2go_recv(int s, void *buf, int len, int flags) {
-	int r = ps2ipc_recv(s, recv_buf, len > RPC_CHUNK ? RPC_CHUNK : len, flags);
-	if (r < 0) {
-		return fail(s);
+	if (recv_rpc.server == NULL) {
+		while (sceSifBindRpc(&recv_rpc, PS2IP_IRX, 0) < 0 || recv_rpc.server == NULL) {
+			nopdelay();
+		}
 	}
-	// The middle of the buffer was written by DMA behind the data cache
-	// (the ends by the CPU): write the ends back, drop the cached lines,
-	// then read everything from memory.
+	int n = len > RPC_CHUNK ? RPC_CHUNK : len;
+	recv_pkt.s.socket = s;
+	recv_pkt.s.length = n;
+	recv_pkt.s.flags = flags;
+	recv_pkt.s.ee_addr = recv_buf;
+	recv_pkt.s.intr_data = &recv_rests;
 	SyncDCache(recv_buf, recv_buf + sizeof(recv_buf));
-	InvalidDCache(recv_buf, recv_buf + sizeof(recv_buf));
-	memcpy(buf, recv_buf, r);
+	if (sceSifCallRpc(&recv_rpc, PS2IPS_ID_RECV, 0, &recv_pkt.s, sizeof(recv_pkt.s), &recv_pkt.r, sizeof(recv_pkt.r), recv_done, &recv_rests) < 0) {
+		return -EIO;
+	}
+	int r = ((r_recv_pkt *)UNCACHED(&recv_pkt))->ret;
+	if (r < 0) {
+		// A failure with no error recorded is the peer being gone
+		// (reset, or closed and already reported): end of stream.
+		int err = pending(s);
+		return err > 0 ? -err : 0;
+	}
+	if (r <= 64) {
+		memcpy(buf, recv_buf, r);
+	} else {
+		int middle = r & ~63;
+		memcpy(buf, UNCACHED(recv_buf), middle);
+		memcpy((char *)buf + middle, recv_buf + middle, r - middle);
+	}
 	return r;
 }
 
